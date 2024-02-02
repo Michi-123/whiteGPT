@@ -306,13 +306,12 @@ class JpSampleTextDataset(JpTextDataset):
         self.index2word = self._set_obejct('index2word')
         self.pad = 6476
 
-    def _set_obejct(self, model_path):
+    def _set_obejct(self, object_path):
         import pickle
         import os
-        #model_path = '/content/whiteGPT/model/akutagawa/'
-        model_name = 'pre-trained.pkl'
+        base_path = '/content/whiteGPT/model/akutagawa/'
         
-        with open(os.path.join(model_path, model_name),'rb') as f:
+        with open(os.path.join(base_path, object_path),'rb') as f:
             object = pickle.load(f)
         return object
 
