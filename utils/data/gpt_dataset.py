@@ -297,21 +297,22 @@ class JpTextDataset(Dataset):
 
 class JpSampleTextDataset(JpTextDataset):
     """
-    青空文庫から夏目漱石の「こころ」をコーパスとしたデータセットに対応させるクラスです
+    青空文庫から芥川龍之介の作品をコーパスとしたデータセットに対応させるクラスです
     """
     def __init__(self):
         self.tagger = tagger
-        self.max_sequence_length = 15
-        self.word2index = self._set_obejct('word2index_kokoro')
-        self.index2word = self._set_obejct('index2word_kokoro')
+        self.max_sequence_length = 10
+        self.word2index = self._set_obejct('word2index')
+        self.index2word = self._set_obejct('index2word')
         self.pad = 6476
 
-    def _set_obejct(self, object_path):
+    def _set_obejct(self, model_path):
         import pickle
         import os
-        base_path = '/content/whiteGPT/model/kokoro/'
+        #model_path = '/content/whiteGPT/model/akutagawa/'
+        model_name = 'pre-trained.pkl'
         
-        with open(os.path.join(base_path, object_path),'rb') as f:
+        with open(os.path.join(model_path, model_name),'rb') as f:
             object = pickle.load(f)
         return object
 
