@@ -1,0 +1,6 @@
+context_size = 15
+vocab_size = 6477
+
+d_model = 32
+n_head = 1
+n_block = 1
