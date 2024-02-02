@@ -220,7 +220,7 @@ class JpTextDataset(Dataset):
         self.index2word[index_pad] = ''
 
     def __len__(self):
-        return len(self.vocab)
+        return len(self.corpus)
 
     def __getitem__(self, idx):
         source_indices  = self.tokenized_corpus[idx]
@@ -319,7 +319,7 @@ class JpSampleTextDataset(JpTextDataset):
         s = self.max_sequence_length
         return (torch.triu(torch.ones((s, s)),1) == 0) * 1
 
-    def sample_sequence(self, model, corpus, n=500):
+    def sample(self, model, corpus, n=500, t=0.1):
         import copy
         import time
         from IPython.display import clear_output
@@ -346,7 +346,7 @@ class JpSampleTextDataset(JpTextDataset):
             display(HTML(text))
             clear_output(wait=True)
             
-            time.sleep(0.1) # 視覚効果
+            time.sleep(t) # 視覚効果
 
 
 #@title TranslationPreTrainDataset
