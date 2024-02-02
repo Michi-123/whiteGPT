@@ -220,7 +220,7 @@ class JpTextDataset(Dataset):
         self.index2word[index_pad] = ''
 
     def __len__(self):
-        return len(self.corpus)
+        return len(self.tokenized_corpus)
 
     def __getitem__(self, idx):
         source_indices  = self.tokenized_corpus[idx]
