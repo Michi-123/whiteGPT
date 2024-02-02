@@ -319,7 +319,7 @@ class JpSampleTextDataset(JpTextDataset):
         s = self.max_sequence_length
         return (torch.triu(torch.ones((s, s)),1) == 0) * 1
 
-    def sample(self, model, corpus, n=500, t=0.1):
+    def sample(self, model, corpus, n=500, t=None):
         import copy
         import time
         from IPython.display import clear_output
@@ -346,7 +346,8 @@ class JpSampleTextDataset(JpTextDataset):
             display(HTML(text))
             clear_output(wait=True)
             
-            time.sleep(t) # 視覚効果
+            if t != None:
+                time.sleep(t) # 視覚効果
 
 
 #@title TranslationPreTrainDataset

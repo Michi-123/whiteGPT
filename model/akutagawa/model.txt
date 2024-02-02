@@ -1,5 +1,5 @@
 context_size = 10
-vocab_size = 
+vocab_size = 1714
 d_model = 32
 n_head = 1
 n_block = 1
