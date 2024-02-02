@@ -300,24 +300,53 @@ class JpSampleTextDataset(JpTextDataset):
     青空文庫から夏目漱石の「こころ」をコーパスとしたデータセットに対応させるクラスです
     """
     def __init__(self):
-        import pickle
-        import os
-
         self.tagger = tagger
         self.max_sequence_length = 15
-        self.word2index = None
-        self.index2word = None
+        self.word2index = self._set_obejct('word2index_kokoro')
+        self.index2word = self._set_obejct('index2word_kokoro')
         self.pad = 6476
-        self.set_ward_and_index()
 
-    def set_ward_and_index(self):
-        base_path = '/content/tinyGPT/model/kokoro/'
+    def _set_obejct(self, object_path):
+        import pickle
+        import os
+        base_path = '/content/whiteGPT/model/kokoro/'
         
-        with open(os.path.join(base_path, 'index2word_kokoro'),'rb') as f:
-            index2word = pickle.load(f)
+        with open(os.path.join(base_path, object_path),'rb') as f:
+            object = pickle.load(f)
+        return object
 
-        with open(os.path.join(base_path, 'word2index_kokoro'),'rb') as f:
-            word2index = pickle.load(f)
+    def _create_attention_mask(self):
+        s = self.max_sequence_length
+        return (torch.triu(torch.ones((s, s)),1) == 0) * 1
+
+    def sample_sequence(self, model, corpus, n=500):
+        import copy
+        import time
+        from IPython.display import clear_output
+        from IPython.core.display import display, HTML
+
+        corpus = tagger.parse(corpus)
+        source = self.sequence2indices(corpus)
+        source = source[:self.max_sequence_length]
+        indices = copy.copy(source)
+        pad = self.word2index['[PAD]']
+        mask = self._create_attention_mask()
+
+        model.eval()
+        display(HTML("<style>div.output_scroll { width: 100%; }</style>"))
+
+        for _ in range(n):
+            inputs = torch.LongTensor([source])
+            outputs = model(inputs, mask)
+            index = torch.argmax(outputs).item()
+            indices.append(index)
+            source.append(index)
+            source = source[1:]
+            text = self.indices2sequence(indices)
+            display(HTML(text))
+            clear_output(wait=True)
+            
+            time.sleep(0.1) # 視覚効果
 
 
 #@title TranslationPreTrainDataset
