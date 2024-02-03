@@ -50,8 +50,16 @@ class TranslationDataset(Dataset):
         source_unique_tokens = set(source_tokens + ['[PAD]'])  # [PAD] を追加
         target_unique_tokens = set(target_tokens + ['[PAD]'])  # [PAD] を追加
 
-        source_vocab = {token: idx for idx, token in enumerate(source_unique_tokens)}
-        target_vocab = {token: idx for idx, token in enumerate(target_unique_tokens)}
+        source_vocab = {token: idx + 2 for idx, token in enumerate(source_unique_tokens)}
+        target_vocab = {token: idx + 2 for idx, token in enumerate(target_unique_tokens)}
+
+        SOS_token = 0
+        EOS_token = 1
+
+        source_vocab['SOS'] = SOS_token
+        source_vocab['EOS'] = EOS_token
+        target_vocab['SOS'] = SOS_token
+        target_vocab['EOS'] = EOS_token
 
         return source_vocab, target_vocab
 
