@@ -303,16 +303,16 @@ class JpTextDataset(Dataset):
         return sequence
 
 
-class JpSampleTextDataset(JpTextDataset):
+class AkutagawaSampleDataset(JpTextDataset):
     """
     青空文庫から芥川龍之介の作品をコーパスとしたデータセットに対応させるクラスです
     """
-    def __init__(self, max_sequence_length, base_path):
+    def __init__(self, base_path):
         self.tagger = tagger
-        self.max_sequence_length = max_sequence_length
+        self.max_sequence_length = 10
+        self.base_path = '/content/whiteGPT/model/akutagawa/'
         self.word2index = self._set_obejct('word2index')
-        self.index2word = self._set_obejct('index2word')
-        self.base_path = base_path #'/content/whiteGPT/model/akutagawa/'
+        self.index2word = self._set_obejct('index2word') 
 
     def _set_obejct(self, object_path):
         import pickle
