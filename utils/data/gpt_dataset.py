@@ -307,19 +307,18 @@ class JpSampleTextDataset(JpTextDataset):
     """
     青空文庫から芥川龍之介の作品をコーパスとしたデータセットに対応させるクラスです
     """
-    def __init__(self):
+    def __init__(self, max_sequence_length, base_path):
         self.tagger = tagger
-        self.max_sequence_length = 10
+        self.max_sequence_length = max_sequence_length
         self.word2index = self._set_obejct('word2index')
         self.index2word = self._set_obejct('index2word')
-        self.pad = 6476
+        self.base_path = base_path #'/content/whiteGPT/model/akutagawa/'
 
     def _set_obejct(self, object_path):
         import pickle
         import os
-        base_path = '/content/whiteGPT/model/akutagawa/'
         
-        with open(os.path.join(base_path, object_path),'rb') as f:
+        with open(os.path.join(self.base_path, object_path),'rb') as f:
             object = pickle.load(f)
         return object
 
@@ -328,6 +327,51 @@ class JpSampleTextDataset(JpTextDataset):
         return (torch.triu(torch.ones((s, s)),1) == 0) * 1
 
     def sample(self, model, corpus, n=500, t=None):
+        import copy
+        import time
+        from IPython.display import clear_output
+        from IPython.core.display import display, HTML
+
+        corpus = tagger.parse(corpus)
+        source = self.sequence2indices(corpus)
+        source = source[:self.max_sequence_length]
+        indices = copy.copy(source)
+        pad = self.word2index['[PAD]']
+        mask = self._create_attention_mask()
+
+        model.eval()
+        
+        html = "<style>div.output_scroll { width: 100%; }</style>"
+        display(HTML(html))
+
+        for _ in range(n):
+            inputs = torch.LongTensor([source])
+            outputs = model(inputs, mask)
+            index = torch.argmax(outputs).item()
+            indices.append(index)
+            source.append(index)
+            source = source[1:]
+            text = self.indices2sequence(indices)
+            display(HTML(text))
+            clear_output(wait=True)
+            
+            if t != None:
+                time.sleep(t) # 視覚効果
+                
+    def _get_html(self):
+        html = "<style>div.output_scroll { width: 100%; }</style>"
+        html += "<div id=output></div>"
+        html += "<script>"
+        html += "function appendText(text) {"
+        html += "    var outputDiv = document.getElementById('output');"
+        html += "    outputDiv.innerHTML += '<p>' + text + '</p>';"
+        html += "}"
+        html += "</script>"
+        
+        return html
+
+
+    def sample_(self, model, corpus, n=500, t=None):
         import copy
         import time
         from IPython.display import clear_output
