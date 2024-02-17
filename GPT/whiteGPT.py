@@ -192,7 +192,7 @@ class GPT(nn.Module):
         
         init.xavier_uniform_(self.fc.weight)        
         init.normal_(self.token_embedding.weight, mean=0.0, std=0.02)
-        init.normal_(self.position_embedding.weight, mean=0.0, std=0.02)
+        init.normal_(self.position_embedding.embedding.weight, mean=0.0, std=0.02)
 
 
     def forward(self, x, mask=None):
