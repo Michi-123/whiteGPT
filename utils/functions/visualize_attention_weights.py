@@ -5,7 +5,9 @@ import japanize_matplotlib
 import matplotlib.pyplot as plt
 import torch
 
-def visualize_attention_weights(attention_weights, words):
+def visualize_attention_weights(attention_weights, parsed_corpus):
+    words = parsed_corpus.split()
+
     # attention_weights: shape (num_heads, sequence_length, sequence_length)
     num_heads, seq_length, _ = attention_weights.shape
     

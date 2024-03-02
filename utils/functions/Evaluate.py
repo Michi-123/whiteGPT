@@ -3,9 +3,9 @@
 import copy
 import torch
 
-"""
 from IPython.display import HTML, display
 
+""" 改行処理 """
 def set_css():
   display(HTML('''
   <style>
@@ -15,15 +15,17 @@ def set_css():
   </style>
   '''))
 get_ipython().events.register('pre_run_cell', set_css)
-"""
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Evaluate:
 
     def __init__(self, dataset, context_size):
         self.dataset = dataset
-        self,context_size = context_size
+        self.context_size = context_size
 
-    def predict(source_indices, target_indices, outputs):
+    def predict(self, source_indices, target_indices, outputs):
         # INPUT
         # 辞書の取得
         my_dict = self.dataset.word2index
@@ -82,7 +84,15 @@ class Evaluate:
             
         # self.dataset.indices2sequence(indices)
 
-    
+
+    def input_tokens(self, corpus):
+        pad = self.dataset.word2index["[PAD]"]
+        source = self.dataset.sequence2indices(corpus)
+        source = source[:self.context_size]
+        inputs = [source + [pad] * (self.context_size - len(source))]
+        inputs = torch.LongTensor(inputs).to(device)
+        return inputs
+        
 
 if __name__ == "__main__": 
     pass
