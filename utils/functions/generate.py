@@ -1,5 +1,5 @@
 # @title Generate
-def genarate(source_indices, target_indices, outputs):
+def generate(dataset, source_indices, target_indices, outputs):
     # INPUT
     # 辞書の取得
     my_dict = dataset.word2index
