@@ -39,15 +39,15 @@ class Evaluate:
             text += key_at_index + " "
         print('source', text)
 
-        # OUTPUT
         output_index = outputs[0].argmax().item()
+        target_index = target_indices[0]
 
         # dict_keysオブジェクトをリストに変換
         keys_list = list(my_dict.keys())
         # テキストデータの検証
         # リストからキーを取得
-        print('output',keys_list[output_index])
-        print('target', keys_list[target_indices[0]])
+        print('target', keys_list[target_index])
+        print('output', keys_list[output_index])
         print()
 
 
