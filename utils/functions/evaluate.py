@@ -51,7 +51,7 @@ class Evaluate:
         print()
 
 
-    def generate(self, corpus, model, mask=None):
+    def generate(self, corpus, model, mask=None, max_token_size=500):
         model.eval()
         pad = self.dataset.word2index['[PAD]']
 
@@ -59,7 +59,7 @@ class Evaluate:
         source = source[:self.context_size]
         indices = copy.copy(source)
 
-        for i in range(500):
+        for i in range(max_token_size):
             inputs = [source + [pad] * (self.context_size - len(source))]
             inputs = torch.LongTensor(inputs).to(device)
 
