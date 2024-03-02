@@ -6,13 +6,15 @@ import matplotlib.pyplot as plt
 import torch
 
 def visualize_attention_weights(attention_weights, parsed_corpus):
-    words = parsed_corpus.split()
+    attention_weights = attention_weights.squeeze().detach()
 
     # attention_weights: shape (num_heads, sequence_length, sequence_length)
-    num_heads, seq_length, _ = attention_weights.shape
+    num_heads, context_size, _ = attention_weights.shape
+
+    words = parsed_corpus.split()[:context_size]
     
     # グラフの作成
-    fig, axs = plt.subplots(num_heads, 1, figsize=(10, 6*num_heads))
+    fig, axs = plt.subplots(num_heads, 1, figsize=(10, 6 * num_heads))
     
     # 各ヘッドごとに重みを可視化
     for i in range(num_heads):
