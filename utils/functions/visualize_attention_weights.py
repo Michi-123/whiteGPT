@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 
 def visualize_attention_weights(attention_weights, parsed_corpus):
-    attention_weights = attention_weights.squeeze().detach()
+    attention_weights = attention_weights.detach()
 
     # attention_weights: shape (num_heads, sequence_length, sequence_length)
     num_heads, context_size, _ = attention_weights.shape
