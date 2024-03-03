@@ -25,7 +25,6 @@ def visualize_attention_weights(attention_weights, parsed_corpus):
 
     # 各ヘッドごとに重みを可視化
     for i in range(num_heads):
-        print('i', i)
         # x軸、y軸のラベルに単語を設定
         axs[i].imshow(attention_weights[i], cmap='hot', interpolation='nearest')
         axs[i].set_title(f'Head {i+1} Attention')
