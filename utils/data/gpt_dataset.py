@@ -371,7 +371,7 @@ class AkutagawaSampleDataset(JpTextDataset):
         return html
 
 
-    def sample_(self, model, corpus, n=500, t=None):
+    def sample_(self, model, corpus, n=500, t=None, use_topk=True):
         import copy
         import time
         from IPython.display import clear_output
@@ -390,7 +390,16 @@ class AkutagawaSampleDataset(JpTextDataset):
         for _ in range(n):
             inputs = torch.LongTensor([source])
             outputs = model(inputs, mask)
-            index = torch.argmax(outputs).item()
+
+            if use_topk:
+                k = 3
+                opk_values, topk_indices = torch.topk(outputs, k)
+                # k個の最大値からランダムに1つをサンプリング
+                topk_index = torch.randint(0, topk_indices.size(1), (1,))
+                index = topk_indices[0, topk_index.item()].tolist()
+            else:
+                index = torch.argmax(outputs).item()
+
             indices.append(index)
             source.append(index)
             source = source[1:]
