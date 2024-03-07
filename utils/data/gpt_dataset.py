@@ -326,7 +326,7 @@ class AkutagawaSampleDataset(JpTextDataset):
         s = self.max_sequence_length
         return (torch.triu(torch.ones((s, s)),1) == 0) * 1
 
-    def sample(self, model, corpus, n=500, t=None):
+    def sample(self, model, corpus, n=500, t=None, use_topk=True):
         import copy
         import time
         from IPython.display import clear_output
@@ -347,7 +347,16 @@ class AkutagawaSampleDataset(JpTextDataset):
         for _ in range(n):
             inputs = torch.LongTensor([source])
             outputs, _ = model(inputs, mask) 
-            index = torch.argmax(outputs).item()
+
+            if use_topk:
+                k = 3
+                opk_values, topk_indices = torch.topk(outputs, k)
+                # k個の最大値からランダムに1つをサンプリング
+                topk_index = torch.randint(0, topk_indices.size(1), (1,))
+                index = topk_indices[0, topk_index.item()].tolist()
+            else:
+                index = torch.argmax(outputs).item()
+
             indices.append(index)
             source.append(index)
             source = source[1:]
@@ -369,46 +378,6 @@ class AkutagawaSampleDataset(JpTextDataset):
         html += "</script>"
         
         return html
-
-
-    def sample_(self, model, corpus, n=500, t=None, use_topk=True):
-        import copy
-        import time
-        from IPython.display import clear_output
-        from IPython.core.display import display, HTML
-
-        corpus = tagger.parse(corpus)
-        source = self.sequence2indices(corpus)
-        source = source[:self.max_sequence_length]
-        indices = copy.copy(source)
-        pad = self.word2index['[PAD]']
-        mask = self._create_attention_mask()
-
-        model.eval()
-        display(HTML("<style>div.output_scroll { width: 100%; }</style>"))
-
-        for _ in range(n):
-            inputs = torch.LongTensor([source])
-            outputs = model(inputs, mask)
-
-            if use_topk:
-                k = 3
-                opk_values, topk_indices = torch.topk(outputs, k)
-                # k個の最大値からランダムに1つをサンプリング
-                topk_index = torch.randint(0, topk_indices.size(1), (1,))
-                index = topk_indices[0, topk_index.item()].tolist()
-            else:
-                index = torch.argmax(outputs).item()
-
-            indices.append(index)
-            source.append(index)
-            source = source[1:]
-            text = self.indices2sequence(indices)
-            display(HTML(text))
-            clear_output(wait=True)
-            
-            if t != None:
-                time.sleep(t) # 視覚効果
 
 
 #@title TranslationPreTrainDataset
