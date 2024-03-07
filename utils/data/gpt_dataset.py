@@ -346,7 +346,7 @@ class AkutagawaSampleDataset(JpTextDataset):
 
         for _ in range(n):
             inputs = torch.LongTensor([source])
-            outputs, _ = model(inputs, mask)
+            outputs, _ = model(inputs, mask) 
             index = torch.argmax(outputs).item()
             indices.append(index)
             source.append(index)
