@@ -188,6 +188,7 @@ class GPT(nn.Module):
         self.positional_encoding = PositionalEncoding(context_size, d_model)
         self.dropout = nn.Dropout(0.1)
         self.transformer_block = nn.ModuleList([TransformerBlock(d_model, n_head) for _ in range(self.n_block)])
+        self.norm = nn.LayerNorm(d_model)
         self.fc = nn.Linear(d_model * context_size, vocab_size)
         
         init.xavier_uniform_(self.fc.weight)        
@@ -201,7 +202,11 @@ class GPT(nn.Module):
 
         for block in self.transformer_block:
             x, w = block(x, mask)
-        x = x.view(-1, context_size * d_model) #(batch_size, -1)ではエラー
+        
+        # GPT-2
+        x = self.norm(x)
+        
+        x = x.view(-1, context_size * d_model)
         x = self.fc(x)
 
         return x, w
