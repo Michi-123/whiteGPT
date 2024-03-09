@@ -181,8 +181,13 @@ class TransformerBlock(nn.Module):
 class GPT(nn.Module):
     def __init__(self, vocab_size, context_size, d_model, n_head, n_block):
         super(GPT, self).__init__()
+        
+        self.vocab_size = vocab_size
+        self.context_size = context_size
         self.d_model = d_model
+        self.n_block = n_head
         self.n_block = n_block
+        
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.position_embedding = PositionEmbedding(context_size, d_model)
         self.positional_encoding = PositionalEncoding(context_size, d_model)
