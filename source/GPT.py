@@ -110,8 +110,8 @@ class MultiHeadAttention(nn.Module):
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
         q, attn = self.attn(q, k, v, mask=mask)
 
-        # Concat
-        q = q.transpose(1, 2).contiguous().view(N, S, -1) # re-assemble all head outputs side by side
+        # 結合
+        q = q.transpose(1, 2).contiguous().view(N, S, -1)
 
         # 線形変換
         q = self.fc(q)
@@ -136,6 +136,7 @@ class FeedForward(nn.Module):
         h = self.fc2(h)
         h = self.dropout(h)
         return h
+
 
 #@title TransformerBlock
 class TransformerBlock(nn.Module):
@@ -173,7 +174,6 @@ class TransformerBlock(nn.Module):
 
         x = self.norm_2(_x)
         x = self.ff(x) + _x
-        # print('E130', x[0][0][:10])
 
         return x, w
 
@@ -202,36 +202,20 @@ class GPT(nn.Module):
 
 
     def forward(self, x, mask=None):
+        # 埋め込み
         x = self.token_embedding(x) + self.positional_encoding(x)
         x = self.dropout(x)
 
+        # Transformer ブロック
         for block in self.transformer_block:
             x, w = block(x, mask)
         
-        # GPT-2
+        # 正規化(GPT-2仕様)
         x = self.norm(x)
         
-        x = x.view(-1, context_size * d_model)
+        x = x.view(-1, self.context_size * self.d_model)
+        
+        # 線形変換
         x = self.fc(x)
 
         return x, w
-
-
-# @title Classifier
-class Classifier(nn.Module):
-    def __init__(self, pretrained_model, hidden_size, num_class=2, dropout_rate=0.5):
-        super(Classifier, self).__init__()
-        self.pretrained_model = pretrained_model
-        self.fc = nn.Linear(d_model * context_size, num_class)
-        self.dropout = nn.Dropout(0.5)
-
-        init.xavier_uniform_(self.fc.weight)
-        init.xavier_uniform_(self.fc1.weight)
-        init.xavier_uniform_(self.fc2.weight)
-
-    def forward(self, x, mask):
-        x, _ = self.pretrained_model(x, mask)
-        x = x.view(-1, context_size * d_model) #(batch_size, -1)ではエラー
-        x = self.fc(x)
-
-        return x
