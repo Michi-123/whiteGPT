@@ -230,12 +230,3 @@ class Classifier(nn.Module):
         x = self.fc(x)
 
         return x
-
-
-
-context_size = 10 # 512 token GPT1
-n_block = 3  # 12 layer in  GPT1
-n_head = 3 # 12 GPT1
-d_model = 48 # 768 GPT1
-
-
