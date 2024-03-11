@@ -4,4 +4,5 @@ This machine learning model learns from scratch with corpus.
 
 now under constructing.
 
-これは、オンライン教育講座 Udemyで使用する教材です。
+これは、オンライン教育講座 Udemyで使用する教材です。<br>
+<a href="https://www.udemy.com/user/cun-shan-kang-shi/"> Udemy 講座一覧 </a>
