@@ -189,7 +189,7 @@ class GPT(nn.Module):
         self.n_block = n_block
         
         self.token_embedding = nn.Embedding(vocab_size, d_model)
-        self.position_embedding = PositionEmbedding(context_size, d_model)
+        # self.position_embedding = PositionEmbedding(context_size, d_model)
         self.positional_encoding = PositionalEncoding(context_size, d_model)
         self.dropout = nn.Dropout(0.1)
         self.transformer_block = nn.ModuleList([TransformerBlock(d_model, n_head) for _ in range(self.n_block)])
