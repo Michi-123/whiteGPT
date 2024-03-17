@@ -32,8 +32,8 @@ def visualize_attention_weights(attention_weights, parsed_corpus):
         axs[i].set_xticklabels(words, rotation=45, ha='right')
         axs[i].set_yticks(torch.arange(len(words)))
         axs[i].set_yticklabels(words)
-        axs[i].set_xlabel('Input Sequence')
-        axs[i].set_ylabel('Output Sequence')
+        axs[i].set_xlabel('Key')
+        axs[i].set_ylabel('Query')
         axs[i].set_aspect('auto')
 
     plt.tight_layout()
