@@ -1,4 +1,5 @@
 #@title ライブラリーの読み込み
+import io
 import random
 import torch
 import torch.nn as nn
