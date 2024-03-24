@@ -3,6 +3,7 @@ import io
 import random
 import torch
 import torch.nn as nn
+import tqdm
 
 # @title CBOWモデル
 class CBOW(nn.Module):
@@ -105,7 +106,7 @@ def load_vectors(fname):
     data = {}
     
     i = 0
-    for line in tqdm(fin):
+    for line in tqdm.tqdm(fin):
         if i == 0: continue
         tokens = line.rstrip().split(' ')
         data[tokens[0]] = np.array(tokens[1:], dtype=float)
