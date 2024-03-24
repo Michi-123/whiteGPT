@@ -94,4 +94,21 @@ def tokenize(corpus):
     return tokenized_corpus 
 
 
+""" コサイン類似度 """
+
+def load_vectors(fname):
+    """ 
+    学習済みモデルの読み込み
+    """
+    fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    data = {}
+    
+    i = 0
+    for line in tqdm(fin):
+        if i == 0: continue
+        tokens = line.rstrip().split(' ')
+        data[tokens[0]] = np.array(tokens[1:], dtype=float)
+        i += 1
+        
+    return data
 
