@@ -261,9 +261,12 @@ class JpTextDataset(Dataset):
         return tokenized_corpus
 
     def get_vocab(self, corpus):
-        tokens = set(token for token in corpus.split())
-        tokens = sorted(tokens)
-        return tokens
+        """
+        コーパスからsetコマンドで、語彙を一意に格納します。
+        語彙順にソートして返却します。 
+        """
+        vocab = set(token for token in corpus.split())
+        return sorted(vocab)
 
     def _read_corpus(self, corpus_path):
         with open(corpus_path, 'rb') as f:
