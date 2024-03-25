@@ -15,7 +15,8 @@ from torch.utils.data import Dataset, DataLoader
 tagger = None
 
 # @title TranslationDataset
-class TranslationDataset(Dataset):    def __init__(self, pairs, max_sequence_length):
+class TranslationDataset(Dataset):
+    def __init__(self, pairs, max_sequence_length):
         self.pairs = pairs
         self.max_sequence_length = max_sequence_length
         self.source_vocab, self.target_vocab = self.build_vocab()
@@ -310,7 +311,7 @@ class AkutagawaSampleDataset(JpTextDataset):
     青空文庫から芥川龍之介の作品をコーパスとしたデータセットに対応させるクラスです
     """
     def __init__(self):
-        self.tagger = None
+        self.tagger = tagger
         self.max_sequence_length = 10
         self.base_path = '/content/whiteGPT/model/akutagawa/'
         self.word2index = self._set_obejct('word2index')
