@@ -1,4 +1,4 @@
-#@title ライブラリーの読み込み
+#@title word2vecライブラリーの読み込み
 import io
 import random
 import torch
@@ -31,21 +31,24 @@ vocab_size = None
 word2index = None
 index2word = None
 tokenized_corpus = None
-
+tokenized_test_corpus = None
 
 # テキストデータの前処理
 def preprocess_text(text):
     return text.lower().split()
-    
+
 
 def context2indices(context):
     return [word2index[word] for word in context]
-    
+
+def set_tokenized_test_corpus(test_corpus):
+    global tokenized_test_corpus
+    tokenized_test_corpus = [preprocess_text(sentence) for sentence in test_corpus]
 
 def test(model):
     # 行の選択
-    n = random.randint(0,len(tokenized_corpus)-1)
-    line = tokenized_corpus[n]
+    n = random.randint(0,len(tokenized_test_corpus)-1)
+    line = tokenized_test_corpus[n]
     # 文章の選択
     m = random.randint(0,len(line)-1 - window_size)
     context = line[m:m+window_size]
@@ -92,8 +95,8 @@ def tokenize(corpus):
     index2word = {idx: word for word, idx in word2index.items()}
     vocab_size = len(vocab)
     vocab_size
-    
-    return tokenized_corpus 
+
+    return tokenized_corpus
 
 
 """ コサイン類似度 """
@@ -101,20 +104,20 @@ import io
 from tqdm import tqdm
 import numpy as np
 def load_vectors(fname):
-    """ 
+    """
     学習済みモデルの読み込み
     """
     fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
     data = {}
-    
+
     first_line = True
-    
+
     for line in tqdm(fin):
         if first_line:
             first_line = False
             continue
-            
+
         tokens = line.rstrip().split(' ')
         data[tokens[0]] = np.array(tokens[1:], dtype=float)
-        
+
     return data
