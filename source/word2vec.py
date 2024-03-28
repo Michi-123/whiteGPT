@@ -104,6 +104,8 @@ class TextDataset(Dataset):
 
 # 教材用にカスタマイズ 
 class TextDataset(TextDataset):
+    def __init__(self, vocab, corpus, window_size):
+        super(TextDataset, self).__init__(vocab, corpus, window_size)
 
     def test_corpus(self, test_corpus_list):
         lines = []
