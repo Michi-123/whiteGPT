@@ -1,6 +1,8 @@
 #@title word2vecライブラリーの読み込み
 import io
 import random
+import re
+import unicodedata
 import tqdm
 import torch
 import torch.nn as nn
