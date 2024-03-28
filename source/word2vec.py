@@ -123,18 +123,17 @@ class TextDataset(TextDataset):
         line = self.tokenized_test_corpus[n]
         # 文章の選択
         m = random.randint(0,len(line)-1 - self.window_size)
-        context = line[m : m + self.window_size]
+        source = line[m : m + self.window_size]
         target = line[m + self.window_size]
-        # インデックスに変換
-        context_indices = [self.word2index[word] for word in context]
-        context_indices = torch.LongTensor([context_indices])
         # 推論
-        predicted_vector = model(context_indices)
+        predicted_vector = model(torch.LongTensor([source]))
 
         next_word_idx = torch.argmax(predicted_vector)
         next_word_idx = next_word_idx.squeeze().tolist()
         predicted_word = self.index2word[next_word_idx]
-        print(' '.join(context),':',predicted_word,':', target)
+
+        sequence = [self.index2word[idx] for idx in source]
+        print(' '.join(sequence),':',predicted_word,':', self.index2word[target])
         # join() メソッドは、配列の要素を指定された文字列で結合して、1つの文字列を返します。
 
 
