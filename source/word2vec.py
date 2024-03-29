@@ -104,7 +104,7 @@ class TextDataset(TextDataset):
         predicted_word = self.index2word[next_word_idx]
 
         sequence = [self.index2word[idx] for idx in source]
-        print(' '.join(sequence),':',predicted_word,':', self.index2word[target])
+        print(' '.join(sequence),':',self.index2word[target],':', predicted_word)
         # join() メソッドは、配列の要素を指定された文字列で結合して、1つの文字列を返します。
 
 
