@@ -29,7 +29,7 @@ class TextDataset(Dataset):
     def __init__(self, vocab, corpus, window_size):
         self.corpus = corpus
         self.window_size = window_size
-        self.vocab = vocab.vocab
+        self.vocab_size = vocab.vocab_size
         self.tokenize = vocab.tokenize
         self.word2index = vocab.word2index
         self.index2word = vocab.index2word
