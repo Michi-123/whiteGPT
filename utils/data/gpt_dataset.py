@@ -85,10 +85,11 @@ class TranslationDataset(Dataset):
 #@title Vocab
 class Vocab():
     def __init__(self, corpus):
-        self.vocab = set(self.tokenize(corpus))
-        self.word2index = {word: idx + 5 for idx, word in enumerate(self.vocab)}
-        self.index2word = {idx + 5: token for idx, token in enumerate(self.vocab)}
-        self.vocab_size = len(self.vocab)
+        vocab = set(self.tokenize(corpus))
+        self.word2index = {word: idx + 5 for idx, word in enumerate(vocab)}
+        self.index2word = {idx + 5: token for idx, token in enumerate(vocab)}
+        self.add_special_tokens()
+        self.vocab_size = len(self.word2index)
 
     def add_special_tokens(self):
         BOS = '<BOS>'
