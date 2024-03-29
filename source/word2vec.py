@@ -7,7 +7,6 @@ import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from whiteGPT import Vocab
 from whiteGPT import TextDataset
 
 # @title CBOWモデル
