@@ -7,8 +7,8 @@ import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from whiteGPT.utils.data.gpt_dataset import Vocab
-from whiteGPT.utils.data.gpt_dataset import TextDataset
+from whiteGPT import Vocab
+from whiteGPT import TextDataset
 
 # @title CBOWモデル
 class CBOW(nn.Module):
