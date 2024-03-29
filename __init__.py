@@ -4,7 +4,7 @@ sys.path.append('./')
 from whiteGPT.source.GPT import GPT
 import whiteGPT.source.word2vec as word2vec
 from whiteGPT.source.word2vec import CBOW
-
+from whiteGPT.source.word2vec import Word2vecDataset
 from whiteGPT.source.GPT import create_attention_mask
 from whiteGPT.utils.data.gpt_dataset import TextDataset
 from whiteGPT.utils.data.gpt_dataset import Vocab

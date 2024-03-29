@@ -7,7 +7,7 @@ import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from whiteGPT import TextDataset
+from whiteGPT.utils.data.gpt_dataset import TextDataset
 
 # @title CBOWモデル
 class CBOW(nn.Module):
@@ -24,87 +24,9 @@ class CBOW(nn.Module):
         h = self.activation(h)
         return h
 
-#@title Vocab
-class Vocab_back():
-    def __init__(self, corpus):
-        self.vocab = set(self.tokenize(corpus))
-        self.word2index = {word: idx + 5 for idx, word in enumerate(self.vocab)}
-        self.index2word = {idx + 5: token for idx, token in enumerate(self.vocab)}
-        self.vocab_size = len(self.vocab)
-
-    def add_special_tokens(self):
-        BOS = '<BOS>'
-        EOS = '<EOS>'
-        PAD = '<PAD>'
-        EXT1 = '<ext1>'
-        EXT2 = '<ext2>'
-
-        self.word2index[0] = BOS
-        self.word2index[1] = EOS
-        self.word2index[2] = PAD
-        self.word2index[3] = EXT1 # 予備1
-        self.word2index[4] = EXT2 # 予備2
-
-        self.index2word[BOS] = 0
-        self.index2word[EOS] = 1
-        self.index2word[PAD] = 2
-        self.index2word[EXT1] = 3 # 予備1
-        self.index2word[EXT2] = 4 # 予備2
-
-    def tokenize(self, corpus):
-        corpus = corpus.lower()
-        return re.findall(r'\w+|[^\w\s]', corpus)
-
-#@title Custom Dataset
-class TextDataset_back(Dataset):
-    def __init__(self, vocab, corpus, window_size):
-        self.corpus = corpus
-        self.window_size = window_size
-        self.vocab = vocab.vocab
-        self.tokenize = vocab.tokenize
-        self.word2index = vocab.word2index
-        self.index2word = vocab.index2word
-        self.tokenized_corpora = self._create_tokenized_corpora(corpus)
-
-    def _create_tokenized_corpora(self, corpus):
-        tokenized_corpora = []
-        tokenized_corpus = self._create_tokenized_corpus(corpus)
-        tokenized_line = []
-        sequence_size = self.window_size + 1
-
-        for i in range(len(tokenized_corpus) - sequence_size):
-            tokenized_sequence = tokenized_corpus[i:i + sequence_size] #['は', '晴れ', 'です']
-            tokenized_corpora.append(tokenized_sequence)
-
-        return tokenized_corpora
-
-    def _create_tokenized_corpus(self, corpus):
-        corpus = corpus = self.tokenize(corpus)
-        tokenized_corpus = [self.word2index[word] for word in corpus]
-        return tokenized_corpus
-
-    def tokenized_corpus2indices(self, tokenized_corpus):
-        indices = []
-        for word in tokenized_corpus:
-            index = self.word2index[word]
-            indices.append(index)
-        return indices        
-
-    def __len__(self):
-        return len(self.tokenized_corpora)
-
-    def __getitem__(self, idx):
-        tokenized_corpus = self.tokenized_corpora[idx]
-        source = tokenized_corpus[:self.window_size]
-        target = tokenized_corpus[self.window_size]
-
-        return {
-            'source': torch.tensor(source),
-            'target': torch.tensor(target),
-        }
 
 # 教材用にカスタマイズ 
-class TextDataset(TextDataset):
+class Word2vecDataset(TextDataset):
     def __init__(self, vocab, corpus, window_size):
         super(TextDataset, self).__init__(vocab, corpus, window_size)
 
