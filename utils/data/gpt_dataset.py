@@ -138,7 +138,7 @@ class TextDataset(Dataset):
 
     def _create_tokenized_corpus(self, corpus):
         corpus = corpus = self.tokenize(corpus)
-        tokenized_corpus = [vocab.word2index[word] for word in corpus]
+        tokenized_corpus = [self.word2index[word] for word in corpus]
         return tokenized_corpus
 
     def tokenized_corpus2indices(self, tokenized_corpus):

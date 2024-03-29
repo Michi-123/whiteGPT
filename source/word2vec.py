@@ -7,6 +7,8 @@ import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+from whiteGPT.utils.data.gpt_dataset import Vocab
+from whiteGPT.utils.data.gpt_dataset import TextDataset
 
 # @title CBOWモデル
 class CBOW(nn.Module):
@@ -24,7 +26,7 @@ class CBOW(nn.Module):
         return h
 
 #@title Vocab
-class Vocab():
+class Vocab_back():
     def __init__(self, corpus):
         self.vocab = set(self.tokenize(corpus))
         self.word2index = {word: idx + 5 for idx, word in enumerate(self.vocab)}
@@ -55,7 +57,7 @@ class Vocab():
         return re.findall(r'\w+|[^\w\s]', corpus)
 
 #@title Custom Dataset
-class TextDataset(Dataset):
+class TextDataset_back(Dataset):
     def __init__(self, vocab, corpus, window_size):
         self.corpus = corpus
         self.window_size = window_size
