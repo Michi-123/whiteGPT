@@ -96,47 +96,20 @@ class Vocab:
         self.word2index = {word: idx for idx, word in enumerate(vocab)}
         self.vocab_size = len(self.word2index)
 
-class Vocab_old():
-    def __init__(self, corpus):
-        vocab = set(self.tokenize(corpus))
-        self.word2index = {word: idx + 5 for idx, word in enumerate(vocab)}
-        self.index2word = {idx + 5: token for idx, token in enumerate(vocab)}
-        self.add_special_tokens()
-        self.vocab_size = len(self.word2index)
-
-    def add_special_tokens(self):
-        BOS = '<BOS>'
-        EOS = '<EOS>'
-        PAD = '<PAD>'
-        EXT1 = '<ext1>'
-        EXT2 = '<ext2>'
-
-        self.word2index[0] = BOS
-        self.word2index[1] = EOS
-        self.word2index[2] = PAD
-        self.word2index[3] = EXT1 # 予備1
-        self.word2index[4] = EXT2 # 予備2
-
-        self.index2word[BOS] = 0
-        self.index2word[EOS] = 1
-        self.index2word[PAD] = 2
-        self.index2word[EXT1] = 3 # 予備1
-        self.index2word[EXT2] = 4 # 予備2
-
-    def tokenize(self, corpus):
-        corpus = corpus.lower()
-        return re.findall(r'\w+|[^\w\s]', corpus)
 
 #@title Custom Dataset
 class TextDataset(Dataset):
     def __init__(self, vocab, corpus, window_size):
         self.corpus = corpus
         self.window_size = window_size
-        self.vocab = vocab.vocab
-        self.tokenize = vocab.tokenize
+        self.vocab = vocab.vocab_size
         self.word2index = vocab.word2index
         self.index2word = vocab.index2word
         self.tokenized_corpora = self._create_tokenized_corpora(corpus)
+
+    def tokenize(self, corpus):
+        corpus = corpus.lower()
+        return re.findall(r'\w+|[^\w\s]', corpus)
 
     def _create_tokenized_corpora(self, corpus):
         tokenized_corpora = []
