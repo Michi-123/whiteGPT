@@ -85,7 +85,8 @@ class TranslationDataset(Dataset):
 #@title Vocab
 class Vocab:
     def __init__(self, sentences):
-        vocab =  sorted(set(' '.join(sentences).split()))
+        #vocab =  sorted(set(' '.join(sentences).split()))
+        vocab =  sorted(set((pre_train_corpus ).split()))
         vocab.insert(0, '<PAD>')
         vocab.insert(1, '<BOS>')
         vocab.insert(2, '<EOS>')
