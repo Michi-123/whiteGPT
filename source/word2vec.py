@@ -115,6 +115,15 @@ class TextDataset(TextDataset):
 word2vec Functions
 """
 
+def modify(corpus_list, window_size):
+    """ 空白を追加し、ピリオドを分割"""
+    pad = '<PAD>' * window_size
+    corpus = pad.join(corpus_list)
+    corpus = corpus.lower()
+    corpus = re.findall(r'\w+|[^\w\s]', corpus)
+    corpus = ' '.join(corpus)
+    return corpus
+
 
 """ コサイン類似度 """
 import io
