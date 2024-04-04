@@ -103,7 +103,7 @@ class TextDataset(Dataset):
     def __init__(self, vocab, corpus, window_size):
         self.corpus = corpus
         self.window_size = window_size
-        self.vocab = vocab.vocab_size
+        self.vocab_size = vocab.vocab_size
         self.word2index = vocab.word2index
         self.index2word = vocab.index2word
         self.tokenized_corpora = self._create_tokenized_corpora(corpus)
@@ -126,7 +126,15 @@ class TextDataset(Dataset):
 
     def _create_tokenized_corpus(self, corpus):
         corpus = corpus = self.tokenize(corpus)
-        tokenized_corpus = [self.word2index[word] for word in corpus]
+        
+        for word in corpus:
+            try:
+                index = self.word2index[word] 
+            except: 
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            tokenized_corpus.append(index)
+        # tokenized_corpus = [self.word2index[word] for word in corpus]
+        
         return tokenized_corpus
 
     def tokenized_corpus2indices(self, tokenized_corpus):
