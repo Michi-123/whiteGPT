@@ -141,7 +141,10 @@ class TextDataset(Dataset):
     def tokenized_corpus2indices(self, tokenized_corpus):
         indices = []
         for word in tokenized_corpus:
-            index = self.word2index[word]
+            try:
+                index = self.word2index[word] 
+            except: 
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
             indices.append(index)
         return indices        
 
@@ -157,6 +160,25 @@ class TextDataset(Dataset):
             'source': torch.tensor(source),
             'target': torch.tensor(target),
         }
+
+
+    def sequence2indices(self, sequence):
+        indices = []
+        for word in sequence.split():
+            try:
+                index = self.word2index[word]
+            except:
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            indices.append(index)
+                
+        return indices
+
+    def indices2sequence(self, indices):
+        sequence = ''
+        for index in indices:
+            letter = self.index2word[index]
+            sequence += letter
+        return sequence
 
 
 #@title PrepareData
