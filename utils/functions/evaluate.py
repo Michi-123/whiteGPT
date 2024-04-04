@@ -16,8 +16,8 @@ def set_css():
   '''))
 get_ipython().events.register('pre_run_cell', set_css)
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class Evaluate:
 
@@ -53,7 +53,7 @@ class Evaluate:
 
     def generate(self, corpus, model, mask=None, max_token_size=500):
         model.eval()
-        pad = self.dataset.word2index['[PAD]']
+        pad = self.dataset.word2index['<PAD>']
 
         source = self.dataset.sequence2indices(corpus)
         source = source[:self.context_size]
@@ -86,7 +86,7 @@ class Evaluate:
 
 
     def input_tokens(self, corpus):
-        pad = self.dataset.word2index["[PAD]"]
+        pad = self.dataset.word2index["<PAD>"]
         source = self.dataset.sequence2indices(corpus)
         source = source[:self.context_size]
         inputs = [source + [pad] * (self.context_size - len(source))]
