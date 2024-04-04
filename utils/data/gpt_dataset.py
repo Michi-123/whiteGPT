@@ -86,7 +86,7 @@ class TranslationDataset(Dataset):
 class Vocab:
     def __init__(self, corpus):
         #vocab =  sorted(set(' '.join(sentences).split()))
-        vocab =  sorted(set((corpus ).split()))
+        vocab =  sorted(set(corpus.split()))
         vocab.insert(0, '<PAD>')
         vocab.insert(1, '<BOS>')
         vocab.insert(2, '<EOS>')

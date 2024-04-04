@@ -30,10 +30,13 @@ class TextDataset(Dataset):
         self.corpus = corpus
         self.window_size = window_size
         self.vocab_size = vocab.vocab_size
-        self.tokenize = vocab.tokenize
         self.word2index = vocab.word2index
         self.index2word = vocab.index2word
         self.tokenized_corpora = self._create_tokenized_corpora(corpus)
+
+    def tokenize(self, corpus):
+        corpus = corpus.lower()
+        return re.findall(r'\w+|[^\w\s]', corpus)
 
     def _create_tokenized_corpora(self, corpus):
         tokenized_corpora = []
