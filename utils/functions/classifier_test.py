@@ -3,7 +3,7 @@ import torch
 def test(model, mask, classifier, vocab, dataloader,):
     index2word = vocab.index2word
     model.eval()
-    answers = ['肯定','否定', '中立' ]
+    answers = {0:'否定', 1:'肯定', 2:'中立' }
 
     count_ok = 0
     
