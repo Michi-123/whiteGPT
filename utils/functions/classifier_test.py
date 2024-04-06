@@ -22,4 +22,4 @@ def test(model, mask, classifier, vocab, dataloader,):
             print(token ,end="")
         
         result = 'OK' if index == target[0].item() else 'NG'
-        print(' -->', answers[index], answers[target[0].item()])
+        print(' -->', answers[index], answers[target[0].item()], result)
