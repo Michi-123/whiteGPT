@@ -1,4 +1,5 @@
 # @title Test
+import torch
 def test(model, mask, classifier, vocab, dataloader,):
     index2word = vocab.index2word
     model.eval()
