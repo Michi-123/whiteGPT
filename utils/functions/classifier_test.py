@@ -1,5 +1,5 @@
 # @title Test
-def test(model, mask, vocab, dataloader,):
+def test(model, mask, classifier, vocab, dataloader,):
     index2word = vocab.index2word
     model.eval()
     answers = ['肯定','否定', '中立' ]
