@@ -53,15 +53,16 @@ class Evaluate:
 
     def generate(self, corpus, model, mask=None, max_token_size=500):
         model.eval()
+        model.cpu()
         pad = self.dataset.word2index['<PAD>']
 
         source = self.dataset.sequence2indices(corpus)
         source = source[:self.context_size]
-        indices = copy.copy(source)
+        #indices = copy.copy(source)
 
         for i in range(max_token_size):
             inputs = [source + [pad] * (self.context_size - len(source))]
-            inputs = torch.LongTensor(inputs).to(device)
+            inputs = torch.LongTensor(inputs).cpu()
 
             outputs ,_ = model(inputs, mask)
             if 1:
@@ -73,17 +74,12 @@ class Evaluate:
                 topk_index = torch.randint(0, topk_indices.size(1), (1,))
                 index = topk_indices[0, topk_index.item()].tolist()
 
-            indices.append(index)
-            # source = torch.cat([source, torch.LongTensor([index]).unsqueeze(0)], dim=1)
+            #indices.append(index)
             source.append(index)
-            # source.pop(0)
             source = source[1:]
 
             print(self.dataset.index2word[index] ,end="")
-            
-            
-        # self.dataset.indices2sequence(indices)
-
+  
 
     def input_tokens(self, corpus):
         pad = self.dataset.word2index["<PAD>"]

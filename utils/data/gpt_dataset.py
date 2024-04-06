@@ -536,88 +536,106 @@ class TranslationPreTrainDataset(Dataset):
 #@title ClassifierDataset  (textual entailment)
 class ClassifierDataset(Dataset):
 
-    # def __init__(self, pretrain_corpus, fine_tuning_corpus, max_length):
-    def __init__(self, pairs=None, context_size=15):
-        self.vocab = None
-        # Vocab(pretrain_corpus)
-        # self.load_classifier_data(data_path)
-        # self.make_pairs(fine_tuning_corpus)
-        self.pairs = pairs
+    def __init__(self, vocab, sentences, context_size=15, tagger=None):
+        self.vocab_size = vocab.vocab_size
+        self.word2index = vocab.word2index
+        self.index2word = vocab.index2word
         self.max_sequence_length = context_size
+        self.tagger = tagger
+        self.pairs = self._make_pairs(sentences)
 
-    def make_pairs(self, lines):
+    def _make_pairs(self, sentences):
 
+        delimiter = ':' # または '\t' など
         pairs = []
-        for line in lines:
 
-            pair = [] # Q & A
-            sentences = line.split('\t')
+        for sentence in sentences:
+            QA = sentence.split(delimiter)
+            Q = self._Q( QA[0] )
+            A = self._A( QA[1] )
+            pairs.append([Q, A])
 
-            # Question
-            pair.append(sentences[0])
+        return pairs
 
-            # Answer
-            pair.append(sentences[1])
+    def _Q(self, Q):
+        indices = self.sentence2indices(Q)
+        indices = self._pad_sequence(indices)
+        return indices
 
-            # ペアデータに追加
-            pairs.append(pair)
+    def _A(self, A):
+        # 含意
+        if A == '否定':
+            A = 0
+        elif A == '肯定':
+            A = 1
+        else: # '中立'
+            A = 2
 
-        # クラス変数に設定
-        self.pairs = pairs
-
+        return A
 
     def load_classifier_data(self, data_path):
-        print("読み込み中...")
         lines = open(data_path, encoding='utf-8').read().strip().split('\n')
 
-
     def __getitem__(self, idx):
-        source_text, target_text = self.pairs[idx] # 'Hello how are you?',  'こんにち は 、 お 元気 です か ？'
-        source_tokens = source_text.split()
-        padded_source_tokens = self.pad_sequence(source_tokens, self.max_sequence_length) # ['Hello', 'how', 'are', 'you?', '[PAD]', '[PAD]', '[PAD]', '[PAD]', '[PAD]', '[PAD]']
 
-        # source_indices = self.sequence2indices(source_text) # ['Hello', 'how', 'are', 'you?']
-        source_indices = self.tokens_to_indices(padded_source_tokens)
+        source, target = self.pairs[idx]
 
-        # target_index = int(target_text)
-        # 含意
-        if target_text == '否定':
-            target_index = 0
-        elif target_text == '肯定':
-            target_index = 1
-        else: # '中立'
-            target_index = 2
-
-        source = torch.LongTensor(source_indices)
-        target = torch.LongTensor([target_index])
+        try:
+            source = torch.LongTensor(source)
+            target = torch.LongTensor([target])
+        except:
+            print('source', source)
+            print('target', target)
 
         return {
             'source': source,
             'target': target
         }
 
-    def pad_sequence(self, tokens, max_length):
-        if len(tokens) < max_length:
-            padding = ['<PAD>'] * (max_length - len(tokens))
-            tokens += padding
-        else:
-            tokens = tokens[:max_length]
+    def _pad_sequence(self, indices):
+        max_length = self.max_sequence_length
+
+        # 文字数がwindowサイズよりも少ない場合の処理
+        if len(indices) < max_length:
+            index_pad = self.word2index['<PAD>']
+            padding = [index_pad] * max_length
+            indices += padding
+
+        return indices[:max_length]
+
+    def _tokenize(self, sentence):
+        if self.tagger:
+            sentence = self.tagger.parse(sentence)
+
+        tokens = sentence.split()
+
         return tokens
 
-    def tokens_to_indices(self, tokens):
-        # 未知の単語
+    def sentence2indices(self, sentence):
+
+        tokens = self._tokenize(sentence)
+
+        # return [self.word2index[token] for token in tokens]
+
+        # 未知の単語にUnknownを割り当てる処理
+        """
         indices = []
         for token in tokens:
-            try:
-                index = self.vocab.word2index[token]
-            except:
-                index =self.vocab.word2index['<UNK>']
+            if token in vocab.word2index:
+                index = self.word2index[token]
+            else:
+                index =self.word2index['<UNK>']
             indices.append(index)
         return indices
-        # return [self.vocab.word2index[token] for token in tokens]
+        """
+        index_unk = self.word2index['<UNK>']
 
-    def indices_to_tokens(self, indices):
-        return [self.vocab.index2word[index] for index in indices]
+        return   [self.word2index.get(token, index_unk) for token in tokens]
+
+    def indices2sentence(self, indices):
+        tokens = [self.index2word[index] for index in indices]
+        sentence = ''.join(tokens)
+        return sentence
 
     def __len__(self):
         return len(self.pairs)
