@@ -5,6 +5,8 @@ def test(model, mask, classifier, vocab, dataloader,):
     model.eval()
     answers = ['肯定','否定', '中立' ]
 
+    count_ok = 0
+    
     for i, batch in enumerate(dataloader):
         # print(i)
         source = batch['source']
@@ -15,11 +17,22 @@ def test(model, mask, classifier, vocab, dataloader,):
 
         # 分類ヘッドの追加
         logits = classifier(x)
-        index = torch.argmax(logits[0]).squeeze().item()
-
-        for id in source[0]:
-            token = index2word[id.item()]
-            print(token ,end="")
         
-        result = 'OK' if index == target[0].item() else 'NG'
-        print(' -->', answers[index], answers[target[0].item()], result)
+        pred_index = torch.argmax(logits[0]).squeeze().item()
+
+        for idx in source[0]:
+            word = index2word[idx.item()]
+            if word == '<PAD>': break
+            print(word ,end="")
+
+        target_index = target[0].item()
+
+        if pred_index == target_index:
+            result = 'OK'
+            count_ok += 1
+        else:
+            result = 'NG'
+
+        print(' -->', answers[pred_index], answers[target_index], result)
+    
+    print('OK: {}/{}'.format(count_ok, i+1))

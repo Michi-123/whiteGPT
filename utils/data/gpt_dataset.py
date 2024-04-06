@@ -574,7 +574,8 @@ class ClassifierDataset(Dataset):
         return A
 
     def load_classifier_data(self, data_path):
-        lines = open(data_path, encoding='utf-8').read().strip().split('\n')
+        #lines = open(data_path, encoding='utf-8').read().strip().split('\n')
+        pass
 
     def __getitem__(self, idx):
 
