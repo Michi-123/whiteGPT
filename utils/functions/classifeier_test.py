@@ -19,4 +19,6 @@ def test(model, mask, vocab, dataloader,):
         for id in source[0]:
             token = index2word[id.item()]
             print(token ,end="")
+        
+        result = if 
         print(' -->', answers[index], answers[target[0].item()])
