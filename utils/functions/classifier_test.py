@@ -20,5 +20,5 @@ def test(model, mask, vocab, dataloader,):
             token = index2word[id.item()]
             print(token ,end="")
         
-        result = if 
+        result = 'OK' if index == target[0].item() else 'NG'
         print(' -->', answers[index], answers[target[0].item()])
