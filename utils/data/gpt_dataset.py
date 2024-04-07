@@ -133,7 +133,6 @@ class TranslationDataset(Dataset):
 #@title Custom Dataset
 class TextDataset(Dataset):
     def __init__(self, vocab, corpus, window_size):
-        self.corpus = corpus
         self.window_size = window_size
         self.vocab_size = vocab.vocab_size
         self.word2index = vocab.word2index
@@ -161,10 +160,12 @@ class TextDataset(Dataset):
         tokenized_corpus = []
         
         for word in corpus:
-            try:
+
+            if word in self.word2index
                 index = self.word2index[word] 
-            except: 
+            else: 
                 index = self.word2index['<UNK>'] # 未登録の単語として処理
+                
             tokenized_corpus.append(index)
         # tokenized_corpus = [self.word2index[word] for word in corpus]
         
@@ -302,13 +303,12 @@ class JpTextDataset(Dataset):
     def __init__(self, corpus, max_sequence_length=15):
 
         self.tagger = tagger
-        self.corpus = corpus
         self.max_sequence_length = max_sequence_length
-        self.vocab = self.get_vocab(self.corpus)
+        self.vocab = self.get_vocab(corpus)
         self.word2index = {word: idx for idx, word in enumerate(self.vocab)}
         self.index2word = {idx:token for idx, token in enumerate(self.vocab)}
         self._add_padding_word()
-        self.tokenized_corpus = self._tokenize_corpus(self.corpus)
+        self.tokenized_corpus = self._tokenize_corpus(corpus)
 
     def _add_padding_word(self):
         self.vocab.append('[PAD]')
@@ -476,13 +476,13 @@ class AkutagawaSampleDataset(JpTextDataset):
 class TranslationPreTrainDataset(Dataset):
     def __init__(self, corpus_path, max_sequence_length):
         self.tagger = tagger
-        self.corpus = self._read_jp_corpus(corpus_path)
+        corpus = self._read_jp_corpus(corpus_path)
         self.max_sequence_length = max_sequence_length
-        self.vocab = self.get_vocab(self.corpus)
+        self.vocab = self.get_vocab(corpus)
         self.word2index = {word: idx for idx, word in enumerate(self.vocab)}
         self.index2word = {idx:token for idx, token in enumerate(self.vocab)}
         self._add_padding_word()
-        self.tokenized_corpus = self.tokenize_corpus(self.corpus)
+        self.tokenized_corpus = self.tokenize_corpus(corpus)
 
     def _add_padding_word(self):
         self.vocab.append('[PAD]')
