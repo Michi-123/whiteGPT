@@ -40,13 +40,18 @@ class Vocab:
     def add_vocab(self, corpus):
         self._update_word_freq(corpus)
 
-    def truncate_vocab(self, minimum_frequency_count=1):
+    def truncate_vocab_CUDA_error(self, minimum_frequency_count=1):
+        """ 実行するとCUDA kernel errors. """
+        
         for index in range(6, len(self.word2index)):
             word = self.index2word[index]
             frequency_count = self.word_freq_desc[word]
             if frequency_count == minimum_frequency_count:
                 del self.index2word[index]
                 del self.word2index[word]
+                # 以下でも同様のエラー
+                # index2word.pop(1, 'Key not found')
+                # word2index.pop(word, 'Key not found')
                 self.vocab_size -= 1
 
     def _update_word_freq(self, corpus):
