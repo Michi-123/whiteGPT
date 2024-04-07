@@ -12,11 +12,58 @@ import re
 import unicodedata
 import torch
 from torch.utils.data import Dataset, DataLoader
-# from torch.nn.utils.rnn import pad_sequence
-# import MeCab
-#tagger = MeCab.Tagger("-Owakati")
 
 tagger = None
+
+
+#@title Vocab
+class Vocab:
+    def __init__(self, corpus):
+        #vocab =  sorted(set(' '.join(sentences).split()))
+        vocab =  sorted(set(corpus.split()))
+        vocab.insert(0, '<PAD>')
+        vocab.insert(1, '<BOS>')
+        vocab.insert(2, '<EOS>')
+        vocab.insert(3, '<UNK>')
+        vocab.insert(4, '<EXT1>')
+        vocab.insert(5, '<EXT2>')
+
+        # self.max_size = 5000 必要であれば追加
+        self.index2word = {idx: word for idx, word in enumerate(vocab)}
+        self.word2index = {word: idx for idx, word in enumerate(vocab)}
+        self.vocab_size = len(self.word2index)
+        self.word_freq = {}
+        self.word_freq_desc = {}
+
+        self._update_word_freq(corpus)
+
+    def add_vocab(self, corpus):
+        self._update_word_freq(corpus)
+
+    def truncate_vocab(self, minimum_frequency_count=1):
+        for index in range(6, len(self.word2index)):
+            word = self.index2word[index]
+            frequency_count = self.word_freq_desc[word]
+            if frequency_count == minimum_frequency_count:
+                del self.index2word[index]
+                del self.word2index[word]
+                self.vocab_size -= 1
+
+    def _update_word_freq(self, corpus):
+
+        word_freq = self.word_freq
+
+        """ 新しいコーパスから単語の頻度を更新 """
+        for word in corpus.split():
+            if word not in word_freq.keys():
+                word_freq[word] = 1
+            else:
+                word_freq[word] += 1
+
+        # 頻出度でソート
+        self.word_freq = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=False))
+        self.word_freq_desc = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
+
 
 # @title TranslationDataset
 class TranslationDataset(Dataset):
@@ -81,21 +128,6 @@ class TranslationDataset(Dataset):
 
     def tokens_to_indices(self, tokens, vocab):
         return [vocab[token] for token in tokens]
-
-#@title Vocab
-class Vocab:
-    def __init__(self, corpus):
-        #vocab =  sorted(set(' '.join(sentences).split()))
-        vocab =  sorted(set(corpus.split()))
-        vocab.insert(0, '<PAD>')
-        vocab.insert(1, '<BOS>')
-        vocab.insert(2, '<EOS>')
-        vocab.insert(3, '<UNK>')
-        vocab.insert(4, '<EXT1>')
-        vocab.insert(5, '<EXT2>')
-        self.index2word = {idx: word for idx, word in enumerate(vocab)}
-        self.word2index = {word: idx for idx, word in enumerate(vocab)}
-        self.vocab_size = len(self.word2index)
 
 
 #@title Custom Dataset
