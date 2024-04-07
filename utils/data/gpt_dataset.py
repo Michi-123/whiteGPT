@@ -161,7 +161,7 @@ class TextDataset(Dataset):
         
         for word in corpus:
 
-            if word in self.word2index
+            if word in self.word2index:
                 index = self.word2index[word] 
             else: 
                 index = self.word2index['<UNK>'] # 未登録の単語として処理
