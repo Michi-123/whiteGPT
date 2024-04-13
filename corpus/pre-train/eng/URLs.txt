@@ -1,2 +1,18 @@
 ﻿https://sfy.ru/scripts
 http://www.full-house.org/episodes/index.php
+
+Noves_The_Great_Gatsby.txt
+Drama_Script_Full_House_1-10.txt
+Movie_Script_ SHINING (1980).txt
+Movie_Script_ STAND_BY_ME.txt
+Movie_Script_.txt
+Movie_Script_Austin Powers_(1997).txt
+Movie_Script_Austin Powers_(1999).txt
+Movie_Script_Back_To_The_Future.txt
+Movie_Script_Backdraft_(1991).txt
+Movie_Script_Cast Away_(2000).txt
+Movie_Script_Ghost_(1990).txt
+Movie_Script_Home_Alone.txt
+Movie_Script_I_Am_Sam_(2001).txt
+Noves_Alice's_Adventure_in_wonderland.txt
+Noves_THE_GREAT_BORE_WAR_001.txt
