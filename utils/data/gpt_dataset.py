@@ -73,7 +73,7 @@ class Vocab:
 
     def remove_rare_words(self,corpus, degree=1):
         self._make_freq(corpus)
-        self._delete_word(degree)
+        self._remove_rare_words(degree)
         self._add_vocab()
 
     def _make_freq(self, corpus):
