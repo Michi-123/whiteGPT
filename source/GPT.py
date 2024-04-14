@@ -90,7 +90,8 @@ class ScaledDotProductAttention(nn.Module):
         attn = torch.matmul(q, k.transpose(2, 3)) /  self.sqrt_d_k
 
         if mask is not None:
-            attn = attn.masked_fill(mask == 0, float("-inf"))
+            #attn = attn.masked_fill(mask == 0, float("-inf"))
+            attn = attn.masked_fill(mask == 0, -1e9)
 
         attn = F.softmax(attn, dim=-1)
         attn = self.dropout(attn)
