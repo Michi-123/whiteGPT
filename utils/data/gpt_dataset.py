@@ -581,6 +581,25 @@ class ClassifierDataset(Dataset):
         self.tagger = tagger
         self.pairs = self._make_pairs(sentences)
 
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, idx):
+
+        source, target = self.pairs[idx]
+
+        try:
+            source = torch.LongTensor(source)
+            target = torch.LongTensor([target])
+        except:
+            print('source', source)
+            print('target', target)
+
+        return {
+            'source': source,
+            'target': target
+        }
+
     def _make_pairs(self, sentences):
 
         delimiter = ':' # または '\t' など
@@ -614,21 +633,6 @@ class ClassifierDataset(Dataset):
         #lines = open(data_path, encoding='utf-8').read().strip().split('\n')
         pass
 
-    def __getitem__(self, idx):
-
-        source, target = self.pairs[idx]
-
-        try:
-            source = torch.LongTensor(source)
-            target = torch.LongTensor([target])
-        except:
-            print('source', source)
-            print('target', target)
-
-        return {
-            'source': source,
-            'target': target
-        }
 
     def _pad_sequence(self, indices):
         max_length = self.max_sequence_length
@@ -675,5 +679,19 @@ class ClassifierDataset(Dataset):
         sentence = ''.join(tokens)
         return sentence
 
-    def __len__(self):
-        return len(self.pairs)
+    """
+    From JpTextDataset class
+    """
+    def sequence2indices(self, sequence):
+        indices = []
+        for word in sequence.split():
+            index = self.word2index[word]
+            indices.append(index)
+        return indices
+
+    def indices2sequence(self, indices):
+        sequence = ''
+        for index in indices:
+            letter = self.index2word[index]
+            sequence += letter
+        return sequence
