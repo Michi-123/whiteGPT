@@ -34,13 +34,14 @@ class Vocab:
         self.vocab_size = len(self.word2index)
         self.word_freq = {}
         self.word_freq_desc = {}
-
+        
+        # 頻出度を更新
         self._update_word_freq(corpus)
 
     def add_vocab(self, corpus):
         self._update_word_freq(corpus)
 
-    def truncate_vocab_CUDA_error(self, minimum_frequency_count=1):
+    def __truncate_vocab_CUDA_error(self, minimum_frequency_count=1):
         """ 実行するとCUDA kernel errors. """
         
         for index in range(6, len(self.word2index)):
@@ -69,14 +70,14 @@ class Vocab:
         self.word_freq = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=False))
         self.word_freq_desc = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
 
-
-
-    def remove_rare_words(self,corpus, degree=1):
-        self._make_freq(corpus)
+    def remove_rare_words(degree=1):
+        #self._make_freq(corpus)
         self._remove_rare_words(degree)
-        self._add_vocab()
+        self._reconstruct_vocab()
 
     def _make_freq(self, corpus):
+        pass
+        """
         # 頻出度を格納する辞書
         freq_dict = {}
 
@@ -87,19 +88,24 @@ class Vocab:
             freq_dict[word] += 1
 
         self.freq_dict = freq_dict
+        """
 
     def _remove_rare_words(self, degree=1):
-        freq_dict = self.freq_dict
+        word_freq = self.word_freq
         # 頻出度が1の要素を削除
-        for word, freq in list(freq_dict.items()):
+        for word, freq in list(word_freq.items()):
             if freq <= degree:
-                del freq_dict[word]
+                del word_freq[word]
 
-    def _add_vocab(self):
+    def _reconstruct_vocab(self):
+        
+        self.index2word = {}
+        self.word2index = {}
+
         # 出現頻度の辞書の単語をインデックスに変換する辞書を作成
         # 頻出度が高い順に単語をソート
-        freq_dict = self.freq_dict
-        sorted_words = sorted(freq_dict.items(), key=lambda x: x[1], reverse=True)
+        word_freq = self.word_freq
+        sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
 
         # 単語をインデックスに変換する辞書を作成
         vocab_size = self.vocab_size
@@ -109,11 +115,12 @@ class Vocab:
             self.index2word[i + vocab_size] = word
 
         self.vocab_size = len(self.index2word)
+        
 
-    def show_freq_dict(self):
+    def show_word_freq(self):
         # 頻出度の高い順に表示
-        freq_dict = self.freq_dict
-        for word, freq in sorted(freq_dict.items(), key=lambda x: x[1], reverse=True):
+        word_freq = self.word_freq
+        for word, freq in sorted(word_freq.items(), key=lambda x: x[1], reverse=True):
             print(f"{word}: {freq}")
 
 
