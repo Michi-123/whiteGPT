@@ -80,6 +80,8 @@ class Vocab:
         #self._make_freq(corpus)
         self._remove_rare_words(degree)
         self._reconstruct_vocab()
+        print('新しいインデックスを作成しました')
+        
 
     def _make_freq(self, corpus):
         pass
@@ -104,6 +106,9 @@ class Vocab:
                 del word_freq[word]
 
     def _reconstruct_vocab(self):
+    
+        # 予約語数
+        N = 6
  
         # buffer
         buffer_index2word = self.index2word
@@ -113,22 +118,18 @@ class Vocab:
         self.index2word = {}
         self.word2index = {}
 
-        for i in range(10):
+        for i in range(N):
             word = buffer_index2word[i]
-            self.index2word[i] = word 
+            self.index2word[i] = word
             self.word2index[word] = i
-            
-            if word == '<UNK>':
-                break
 
         # 出現頻度の辞書の単語をインデックスに変換する辞書を作成
         # 頻出度が高い順に単語をソート
-        word_freq = self.word_freq
-        sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
+        sorted_words = sorted(self.word_freq.items(), key=lambda x: x[1], reverse=True)
 
         # 辞書を再作成
         for i, (word, _) in enumerate(sorted_words):
-            index = buffer_word2index[word] # bufferから取得
+            index = N + i # 予約後 + i
             self.word2index[word] = index
             self.index2word[index] = word
 
