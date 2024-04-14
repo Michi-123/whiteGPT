@@ -24,6 +24,22 @@ def create_attention_mask(seq_length):
     return attention_mask * 1
 
 
+def create_pad_mask(source):
+    # True -> 1; False -> 0
+    source = source.ne(0) * 1
+    sq_masks = []
+    for tokens in source:
+        rows = []
+        for n in range(1, len(tokens) + 1):
+            mask = torch.cat((tokens[:n], tokens[n:] * 0), dim=0)
+            rows.append(mask)
+        sq_mask = torch.stack(rows)
+        sq_masks.append(sq_mask)
+
+    pad_mask = torch.stack(sq_masks).unsqueeze(1)
+
+    return pad_mask
+    
 #@title PositionEmbedding
 class PositionEmbedding(nn.Module):
     def __init__(self, context_size , d_model):

@@ -70,6 +70,54 @@ class Vocab:
         self.word_freq_desc = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
 
 
+
+    def remove_rare_words(self,corpus, degree=1):
+        self._make_freq(corpus)
+        self._delete_word(degree)
+        self._add_vocab()
+
+    def _make_freq(self, corpus):
+        # 頻出度を格納する辞書
+        freq_dict = {}
+
+        # コーパスから語彙の頻出度を数える
+        for word in corpus.split():
+            if word not in freq_dict:
+                freq_dict[word] = 0
+            freq_dict[word] += 1
+
+        self.freq_dict = freq_dict
+
+    def _remove_rare_words(self, degree=1):
+        freq_dict = self.freq_dict
+        # 頻出度が1の要素を削除
+        for word, freq in list(freq_dict.items()):
+            if freq <= degree:
+                del freq_dict[word]
+
+    def _add_vocab(self):
+        # 出現頻度の辞書の単語をインデックスに変換する辞書を作成
+        # 頻出度が高い順に単語をソート
+        freq_dict = self.freq_dict
+        sorted_words = sorted(freq_dict.items(), key=lambda x: x[1], reverse=True)
+
+        # 単語をインデックスに変換する辞書を作成
+        vocab_size = self.vocab_size
+
+        for i, (word, _) in enumerate(sorted_words):
+            self.word2index[word] = i + vocab_size
+            self.index2word[i + vocab_size] = word
+
+        self.vocab_size = len(self.index2word)
+
+    def show_freq_dict(self):
+        # 頻出度の高い順に表示
+        freq_dict = self.freq_dict
+        for word, freq in sorted(freq_dict.items(), key=lambda x: x[1], reverse=True):
+            # if len(word) == 1:
+            print(f"{word}: {freq}")
+
+
 # @title TranslationDataset
 class TranslationDataset(Dataset):
     def __init__(self, pairs, max_sequence_length):
