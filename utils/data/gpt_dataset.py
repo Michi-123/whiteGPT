@@ -70,7 +70,7 @@ class Vocab:
         self.word_freq = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=False))
         self.word_freq_desc = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
 
-    def remove_rare_words(degree=1):
+    def remove_rare_words(self, degree=1):
         #self._make_freq(corpus)
         self._remove_rare_words(degree)
         self._reconstruct_vocab()
