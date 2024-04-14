@@ -36,10 +36,14 @@ class Vocab:
         self.word_freq_desc = {}
         
         # 頻出度を更新
-        self._update_word_freq(corpus)
+        #self._update_word_freq(corpus)
+        self._create_word_freq(vocab)
 
     def add_vocab(self, corpus):
         self._update_word_freq(corpus)
+
+    def _update_word_freq(self, corpus):
+        pass
 
     def __truncate_vocab_CUDA_error(self, minimum_frequency_count=1):
         """ 実行するとCUDA kernel errors. """
@@ -55,12 +59,15 @@ class Vocab:
                 # word2index.pop(word, 'Key not found')
                 self.vocab_size -= 1
 
-    def _update_word_freq(self, corpus):
+    #def _update_word_freq(self, corpus):
+    def _create_word_freq(self, vocab):
 
-        word_freq = self.word_freq
+        #word_freq = self.word_freq
+        word_freq = {}
 
         """ 新しいコーパスから単語の頻度を更新 """
-        for word in corpus.split():
+        #for word in corpus.split():
+        for word in vocab:
             if word not in word_freq.keys():
                 word_freq[word] = 1
             else:
@@ -108,14 +115,13 @@ class Vocab:
         sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
 
         # 単語をインデックスに変換する辞書を作成
-        vocab_size = self.vocab_size
+        default_vocab_size = 6
 
         for i, (word, _) in enumerate(sorted_words):
-            self.word2index[word] = i + vocab_size
-            self.index2word[i + vocab_size] = word
+            self.word2index[word] = i + default_vocab_size
+            self.index2word[i + default_vocab_size] = word
 
-        self.vocab_size = len(self.index2word)
-        
+        self.vocab_size = len(self.word2index)
 
     def show_word_freq(self):
         # 頻出度の高い順に表示
