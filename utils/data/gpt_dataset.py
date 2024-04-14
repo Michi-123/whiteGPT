@@ -104,21 +104,33 @@ class Vocab:
                 del word_freq[word]
 
     def _reconstruct_vocab(self):
-        
+ 
+        # buffer
+        buffer_index2word = self.index2word
+        buffer_word2index = self.word2index
+
+        # 初期化
         self.index2word = {}
         self.word2index = {}
+
+        for i in range(10):
+            word = buffer_index2word[i]
+            self.index2word[i] = word 
+            self.word2index[word] = i
+            
+            if word == '<UNK>':
+                break
 
         # 出現頻度の辞書の単語をインデックスに変換する辞書を作成
         # 頻出度が高い順に単語をソート
         word_freq = self.word_freq
         sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
 
-        # 単語をインデックスに変換する辞書を作成
-        default_vocab_size = 6
-
+        # 辞書を再作成
         for i, (word, _) in enumerate(sorted_words):
-            self.word2index[word] = i + default_vocab_size
-            self.index2word[i + default_vocab_size] = word
+            index = buffer_word2index[word] # bufferから取得
+            self.word2index[word] = index
+            self.index2word[index] = word
 
         self.vocab_size = len(self.word2index)
 
