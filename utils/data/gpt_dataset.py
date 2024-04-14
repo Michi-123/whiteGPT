@@ -683,15 +683,7 @@ class ClassifierDataset(Dataset):
     From JpTextDataset class
     """
     def sequence2indices(self, sequence):
-        indices = []
-        for word in sequence.split():
-            index = self.word2index[word]
-            indices.append(index)
-        return indices
+        return self.sentence2indices(sequence)
 
     def indices2sequence(self, indices):
-        sequence = ''
-        for index in indices:
-            letter = self.index2word[index]
-            sequence += letter
-        return sequence
+        return self.indices2sentence(indices)
