@@ -37,7 +37,7 @@ class Vocab:
         
         # 頻出度を更新
         #self._update_word_freq(corpus)
-        self._create_word_freq(vocab)
+        self._create_word_freq(corpus)
 
     def add_vocab(self, corpus):
         self._update_word_freq(corpus)
@@ -60,14 +60,13 @@ class Vocab:
                 self.vocab_size -= 1
 
     #def _update_word_freq(self, corpus):
-    def _create_word_freq(self, vocab):
+    def _create_word_freq(self, corpus):
 
         #word_freq = self.word_freq
         word_freq = {}
 
         """ 新しいコーパスから単語の頻度を更新 """
-        #for word in corpus.split():
-        for word in vocab:
+        for word in corpus.split():
             if word not in word_freq.keys():
                 word_freq[word] = 1
             else:
