@@ -114,7 +114,6 @@ class Vocab:
         # 頻出度の高い順に表示
         freq_dict = self.freq_dict
         for word, freq in sorted(freq_dict.items(), key=lambda x: x[1], reverse=True):
-            # if len(word) == 1:
             print(f"{word}: {freq}")
 
 
