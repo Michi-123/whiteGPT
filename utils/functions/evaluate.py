@@ -5,6 +5,8 @@ import torch
 
 from IPython.display import HTML, display
 
+from whiteGPT.source.GPT import create_pad_mask
+
 """ 改行処理 """
 def set_css():
   display(HTML('''
@@ -63,6 +65,9 @@ class Evaluate:
         for i in range(max_token_size):
             inputs = [source + [pad] * (self.context_size - len(source))]
             inputs = torch.LongTensor(inputs).cpu()
+            
+            if mask:
+                mask = create_pad_mask(inputs)
 
             outputs ,_ = model(inputs, mask)
             if 1:
