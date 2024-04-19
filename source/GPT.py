@@ -23,7 +23,7 @@ def create_attention_mask(seq_length):
     attention_mask = attention_mask == 0
     return attention_mask * 1
 
-
+#@title create_pad_mask
 def create_pad_mask(source):
     # True -> 1; False -> 0
     source = source.ne(0) * 1
