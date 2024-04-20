@@ -66,7 +66,7 @@ class Evaluate:
             inputs = [source + [pad] * (self.context_size - len(source))]
             inputs = torch.LongTensor(inputs).cpu()
             
-            if mask:
+            if mask is not None:
                 mask = create_pad_mask(inputs)
 
             outputs ,_ = model(inputs, mask)
