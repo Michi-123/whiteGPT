@@ -125,12 +125,49 @@ def modify(corpus_list, window_size):
     return corpus
 
 
-""" コサイン類似度 """
+
+
 import io
 from tqdm import tqdm
 import numpy as np
 
-def load_vectors(fname):
+def load_vectors(fname, max_size=20000, return_dic=False):
+    """
+    学習済みモデルの読み込み
+    """
+    w2i = {}
+    i2w = {}
+    w2v = {}
+    first_line = True
+
+    fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
+
+    for i, line in enumerate(fin):
+
+        if first_line:
+            # コメント行のスキップ
+            first_line = False
+            continue
+
+        if i > max_size: break
+
+        line_list  = line.rstrip().split(' ')
+        word = line_list[0]
+        vector = np.array(line_list[1:], dtype=float)
+
+        w2v[word] = vector
+
+        if return_dic:
+            w2i[word] = i
+            i2w[i] = word
+
+    if return_dic:
+        return w2v, w2i, i2w
+    else:
+        return w2v
+
+
+def _load_vectors(fname):
     """
     学習済みモデルの読み込み
     """
