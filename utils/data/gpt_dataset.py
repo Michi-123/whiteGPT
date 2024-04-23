@@ -158,7 +158,7 @@ class TranslationDataset(Dataset):
         source_tokens = self.tokenize(source_text) # ['Hello', 'how', 'are', 'you?']
         target_tokens = self.tokenize(target_text)
 
-        padded_source_tokens = self.pad_sequence(source_tokens, self.max_sequence_length) # ['Hello', 'how', 'are', 'you?', '[PAD]', '[PAD]', '[PAD]', '[PAD]', '[PAD]', '[PAD]']
+        padded_source_tokens = self.pad_sequence(source_tokens, self.max_sequence_length) # ['Hello', 'how', 'are', 'you?', '<PAD>', '<PAD>', '<PAD>', '<PAD>', '<PAD>', '<PAD>']
         padded_target_tokens = self.pad_sequence(target_tokens, self.max_sequence_length)
 
         source_indices = self.tokens_to_indices(padded_source_tokens, self.source_vocab)
@@ -175,8 +175,8 @@ class TranslationDataset(Dataset):
         source_tokens = [token for text in source_texts for token in self.tokenize(text)]
         target_tokens = [token for text in target_texts for token in self.tokenize(text)]
 
-        source_unique_tokens = set(source_tokens + ['[PAD]'])  # [PAD] を追加
-        target_unique_tokens = set(target_tokens + ['[PAD]'])  # [PAD] を追加
+        source_unique_tokens = set(source_tokens + ['<PAD>'])  # <PAD> を追加
+        target_unique_tokens = set(target_tokens + ['<PAD>'])  # <PAD> を追加
 
         source_vocab = {token: idx + 2 for idx, token in enumerate(source_unique_tokens)}
         target_vocab = {token: idx + 2 for idx, token in enumerate(target_unique_tokens)}
@@ -197,7 +197,7 @@ class TranslationDataset(Dataset):
 
     def pad_sequence(self, tokens, max_length):
         if len(tokens) < max_length:
-            padding = ['[PAD]'] * (max_length - len(tokens))
+            padding = ['<PAD>'] * (max_length - len(tokens))
             tokens += padding
         else:
             tokens = tokens[:max_length]
@@ -388,9 +388,9 @@ class JpTextDataset(Dataset):
         self.tokenized_corpus = self._tokenize_corpus(corpus)
 
     def _add_padding_word(self):
-        self.vocab.append('[PAD]')
+        self.vocab.append('<PAD>')
         index_pad = len(self.vocab) - 1
-        self.word2index['[PAD]'] = index_pad
+        self.word2index['<PAD>'] = index_pad
         self.index2word[index_pad] = ''
 
     def __len__(self):
@@ -505,7 +505,7 @@ class AkutagawaSampleDataset(JpTextDataset):
         source = self.sequence2indices(corpus)
         source = source[:self.max_sequence_length]
         indices = copy.copy(source)
-        pad = self.word2index['[PAD]']
+        pad = self.word2index['<PAD>']
         mask = self._create_attention_mask()
 
         model.eval()
@@ -562,9 +562,9 @@ class TranslationPreTrainDataset(Dataset):
         self.tokenized_corpus = self.tokenize_corpus(corpus)
 
     def _add_padding_word(self):
-        self.vocab.append('[PAD]')
+        self.vocab.append('<PAD>')
         index_pad = len(self.vocab) - 1
-        self.word2index['[PAD]'] = index_pad
+        self.word2index['<PAD>'] = index_pad
         self.index2word[index_pad] = ''
 
     def __len__(self):
