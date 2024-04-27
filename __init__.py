@@ -15,4 +15,3 @@ from whiteGPT.utils.data.gpt_dataset import PrepareData
 from whiteGPT.utils.data.gpt_dataset import ClassifierDataset
 from whiteGPT.utils.functions.evaluate import Evaluate
 from whiteGPT.utils.functions.evaluate import classifier_test
-from whiteGPT.utils.functions.visualize_attention_weights import visualize_attention_weights
