@@ -233,7 +233,7 @@ class TextDataset(Dataset):
         return tokenized_corpora
 
     def _create_tokenized_corpus(self, corpus):
-        corpus = corpus = self.tokenize(corpus)
+        corpus = self.tokenize(corpus)
         tokenized_corpus = []
         
         for word in corpus:

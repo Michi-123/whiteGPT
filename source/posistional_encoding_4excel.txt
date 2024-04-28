@@ -1,0 +1,46 @@
+' 例: セル範囲のハッシュ値を求める
+Sub get_hash()
+    Dim hashedValue As String
+    Dim rng As Range
+    'Set rng = Range("Y7:Y5415")
+    Set rng = Selection
+    hashedValue = MakeHashWithOrder(rng) ' 行数
+    Debug.Print hashedValue
+End Sub
+
+
+Function MakeHashWithOrder(rng As Range) As Double
+    Dim buffer As Double
+    Dim cell As Range
+    Dim cellValues() As Variant
+    Dim i As Long
+    Dim cellvalue As Double
+    
+    ' セル範囲の値を配列に格納
+    cellValues = rng.Value
+    
+    For i = LBound(cellValues, 1) To UBound(cellValues, 1)
+    
+        cellvalue = CDbl(cellValues(i, 1))
+        'Debug.Print cellvalue
+        
+        buffer = buffer + CDbl(cellvalue) * PositionalEncoding(i)
+    Next i
+    
+    MakeHashWithOrder = buffer
+End Function
+Function PositionalEncoding(pos_input As Long) As Double
+    Dim factor As Double
+    Dim pos As Double
+    Dim i As Double
+    Dim d_model As Long
+    
+    d_model = 1 ' ベクトルの次元
+    
+    i = 1 ' ベクトルの各次元のインデックス
+    
+    pos = CDbl(pos_input)
+    factor = 10000 ^ (2 * i / d_model)
+    
+    PositionalEncoding = Sin(pos / factor)
+End Function
