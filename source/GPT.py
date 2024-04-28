@@ -39,7 +39,22 @@ def create_pad_mask(source):
     pad_mask = torch.stack(sq_masks).unsqueeze(1)
 
     return pad_mask
-    
+
+#@title add_random_pad
+import random
+pad_index = dataset.word2index['<PAD>']
+def add_random_pad(data, epoch):
+    # パディングする位置（教師データを除く位置まで）
+    source_size = 1
+    n = random.randint(1, context_size - 1)
+    # 次のトークンを教師データに設定
+    source = data[:, :-1].clone()
+    target = data[:,n + 1].clone()
+    # 入力元をパディング
+    source[:, n+1:] = pad_index
+    return source, target
+
+
 #@title PositionEmbedding
 class PositionEmbedding(nn.Module):
     def __init__(self, context_size , d_model):
