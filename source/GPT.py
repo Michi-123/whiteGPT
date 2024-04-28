@@ -42,7 +42,7 @@ def create_pad_mask(source):
 
 #@title add_random_pad
 import random
-pad_index = dataset.word2index['<PAD>']
+pad_index = 0 # dataset.word2index['<PAD>']
 def add_random_pad(data, epoch):
     # パディングする位置（教師データを除く位置まで）
     source_size = 1
