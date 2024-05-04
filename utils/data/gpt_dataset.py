@@ -295,6 +295,91 @@ class TextDataset(Dataset):
         return sequence
 
 
+#@title LongSequenceDataset
+class LongSequenceDataset(Dataset):
+    def __init__(self, vocab, corpus, window_size, context_size):
+        self.window_size = window_size
+        self.context_size = context_size
+        self.vocab_size = vocab.vocab_size
+        self.word2index = vocab.word2index
+        self.index2word = vocab.index2word
+        self.tokenized_corpora = self._create_tokenized_corpora(corpus)
+
+    def tokenize(self, corpus):
+        corpus = corpus.lower()
+        return re.findall(r'\w+|[^\w\s]', corpus)
+
+    def _create_tokenized_corpora(self, corpus):
+        tokenized_corpora = []
+        tokenized_corpus = self._create_tokenized_corpus(corpus)
+        tokenized_line = []
+        sequence_size = self.window_size + 1
+
+        # 文章をモデルの入力サイズで分割
+        for i in range(0, len(tokenized_corpus) - sequence_size, self.context_size):
+            tokenized_sequence = tokenized_corpus[i:i + sequence_size] #['は', '晴れ', 'です']
+            tokenized_corpora.append(tokenized_sequence)
+
+        return tokenized_corpora
+
+    def _create_tokenized_corpus(self, corpus):
+        corpus = self.tokenize(corpus)
+        tokenized_corpus = []
+
+        for word in corpus:
+
+            if word in self.word2index:
+                index = self.word2index[word]
+            else:
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+
+            tokenized_corpus.append(index)
+        # tokenized_corpus = [self.word2index[word] for word in corpus]
+
+        return tokenized_corpus
+
+    def tokenized_corpus2indices(self, tokenized_corpus):
+        indices = []
+        for word in tokenized_corpus:
+            try:
+                index = self.word2index[word]
+            except:
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            indices.append(index)
+        return indices
+
+    def __len__(self):
+        return len(self.tokenized_corpora)
+
+    def __getitem__(self, idx):
+        tokenized_corpus = self.tokenized_corpora[idx]
+        source = tokenized_corpus[:self.window_size]
+        target = tokenized_corpus[self.window_size]
+
+        return {
+            'source': torch.tensor(source),
+            'target': torch.tensor(target),
+        }
+
+
+    def sequence2indices(self, sequence):
+        indices = []
+        for word in sequence.split():
+            try:
+                index = self.word2index[word]
+            except:
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            indices.append(index)
+
+        return indices
+
+    def indices2sequence(self, indices):
+        sequence = ''
+        for index in indices:
+            letter = self.index2word[index]
+            sequence += letter
+        return sequence
+
 #@title PrepareData
 class PrepareData:
 
