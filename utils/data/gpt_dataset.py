@@ -16,7 +16,7 @@ from torch.utils.data import Dataset, DataLoader
 tagger = None
 
 
-#@title Vocab
+# @title Vocab
 class Vocab:
     def __init__(self, corpus):
         #vocab =  sorted(set(' '.join(sentences).split()))
@@ -34,20 +34,42 @@ class Vocab:
         self.vocab_size = len(self.word2index)
         self.word_freq = {}
         self.word_freq_desc = {}
-        
+
         # 頻出度を更新
         #self._update_word_freq(corpus)
         self._create_word_freq(corpus)
 
     def add_vocab(self, corpus):
+        added_vocab = sorted(set(corpus.split()))
+        vocab_size = self.vocab_size
+
+        index2word = {idx + vocab_size: word for idx, word in enumerate(added_vocab)}
+        word2index = {word: idx + vocab_size for idx, word in enumerate(added_vocab)}
+
+        self.index2word.update(index2word)
+        self.word2index.update(word2index)
+
+        self.vocab_size = len(self.word2index)
+
         self._update_word_freq(corpus)
 
     def _update_word_freq(self, corpus):
-        pass
+        word_freq = self.word_freq
+
+        """ 新しいコーパスから単語の頻度を更新 """
+        for word in corpus.split():
+            if word not in word_freq.keys():
+                word_freq[word] = 1
+            else:
+                word_freq[word] += 1
+
+        # 頻出度でソート
+        self.word_freq = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=False))
+        self.word_freq_desc = dict(sorted(word_freq.items(), key=lambda item: item[1], reverse=True))
 
     def __truncate_vocab_CUDA_error(self, minimum_frequency_count=1):
         """ 実行するとCUDA kernel errors. """
-        
+
         for index in range(6, len(self.word2index)):
             word = self.index2word[index]
             frequency_count = self.word_freq_desc[word]
@@ -59,10 +81,8 @@ class Vocab:
                 # word2index.pop(word, 'Key not found')
                 self.vocab_size -= 1
 
-    #def _update_word_freq(self, corpus):
     def _create_word_freq(self, corpus):
 
-        #word_freq = self.word_freq
         word_freq = {}
 
         """ 新しいコーパスから単語の頻度を更新 """
@@ -81,22 +101,6 @@ class Vocab:
         self._remove_rare_words(degree)
         self._reconstruct_vocab()
         print('新しいインデックスを作成しました')
-        
-
-    def _make_freq(self, corpus):
-        pass
-        """
-        # 頻出度を格納する辞書
-        freq_dict = {}
-
-        # コーパスから語彙の頻出度を数える
-        for word in corpus.split():
-            if word not in freq_dict:
-                freq_dict[word] = 0
-            freq_dict[word] += 1
-
-        self.freq_dict = freq_dict
-        """
 
     def _remove_rare_words(self, degree=1):
         word_freq = self.word_freq
@@ -106,10 +110,10 @@ class Vocab:
                 del word_freq[word]
 
     def _reconstruct_vocab(self):
-    
+
         # 予約語数
         N = 6
- 
+
         # buffer
         buffer_index2word = self.index2word
         buffer_word2index = self.word2index
