@@ -94,8 +94,42 @@ class Evaluate:
         inputs = torch.LongTensor(inputs).to(device)
         return inputs
         
+    def generate_long(self, corpus, model, mask=None, max_token_size=500):
+        model.eval()
+        model.cpu()
+        pad = self.dataset.word2index['<PAD>']
+
+        source = self.dataset.sequence2indices(corpus)
+
+        latent = torch.zeros(1, context_size, d_model, dtype=torch.float).cpu()
+
+        for i in range(len(source) - context_size - 1):
+            inputs = source[i:i + self.context_size]
+            inputs = torch.LongTensor(inputs).cpu()
+            _outputs, latent, _w = model(inputs, latent, mask)
 
 
+        inputs = source[-self.context_size:]
+        for i in range(max_token_size):
+            inputs = torch.LongTensor(inputs).cpu()
+
+            # 推論
+            outputs, latent, w = model(inputs, latent, mask)
+
+            if 0:
+                index = torch.argmax(outputs).item()
+            else:
+                k = 3
+                opk_values, topk_indices = torch.topk(outputs, k)
+                # k個の最大値からランダムに1つをサンプリング
+                topk_index = torch.randint(0, topk_indices.size(1), (1,))
+                index = topk_indices[0, topk_index.item()].tolist()
+
+            #indices.append(index)
+            source.append(index)
+            source = source[1:]
+
+            print(self.dataset.index2word[index] ,end="")
 
 
 # @title Test
