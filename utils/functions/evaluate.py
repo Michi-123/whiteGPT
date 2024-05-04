@@ -94,7 +94,7 @@ class Evaluate:
         inputs = torch.LongTensor(inputs).to(device)
         return inputs
         
-    def generate_long(self, corpus, model, mask=None, max_token_size=500):
+    def generate_long(self, corpus, model, mask=None, max_token_size=500, deterministic_select=True):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
@@ -116,7 +116,7 @@ class Evaluate:
             # 推論
             outputs, latent, w = model(inputs, latent, mask)
 
-            if 0:
+            if deterministic_select:
                 index = torch.argmax(outputs).item()
             else:
                 k = 3
