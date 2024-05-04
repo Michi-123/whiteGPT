@@ -101,9 +101,9 @@ class Evaluate:
 
         source = self.dataset.sequence2indices(corpus)
 
-        latent = torch.zeros(1, context_size, d_model, dtype=torch.float).cpu()
+        latent = torch.zeros(1, self.context_size, d_model, dtype=torch.float).cpu()
 
-        for i in range(len(source) - context_size - 1):
+        for i in range(len(source) - self.context_size - 1):
             inputs = source[i:i + self.context_size]
             inputs = torch.LongTensor(inputs).cpu()
             _outputs, latent, _w = model(inputs, latent, mask)
