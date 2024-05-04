@@ -94,7 +94,7 @@ class Evaluate:
         inputs = torch.LongTensor(inputs).to(device)
         return inputs
         
-    def generate_long(self, corpus, model, mask=None, max_token_size=500, deterministic_select=True):
+    def generate_long(self, corpus, model, d_model, mask=None, max_token_size=500, deterministic_select=True):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
