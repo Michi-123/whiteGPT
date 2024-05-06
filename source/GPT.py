@@ -123,7 +123,7 @@ class MultiHeadAttention(nn.Module):
         self.fc_q = nn.Linear(d_model, d_model * n_head)
         self.fc_k = nn.Linear(d_model, d_model * n_head)
         self.fc_v = nn.Linear(d_model, d_model * n_head)
-        self.attn = ScaledDotProductAttention(d_model)
+        self.attn = ScaledDotProductAttention(d_model, dropout)
         self.fc = nn.Linear(n_head * d_model, d_model)
         self.dropout = nn.Dropout(dropout)
 
@@ -178,7 +178,7 @@ class TransformerBlock(nn.Module):
         self.norm_1 = nn.LayerNorm(d_model)
         self.norm_2 = nn.LayerNorm(d_model)
         self.attn = MultiHeadAttention(n_head, d_model)
-        self.ff = FeedForward(d_model)
+        self.ff = FeedForward(d_model, dropout)
 
         # Initialize gamma (weight) with N(0, 0.02)
         nn.init.normal_(self.norm_1.weight, mean=0, std=0.02)
@@ -211,7 +211,7 @@ class TransformerBlock(nn.Module):
 
 #@title GPT
 class GPT(nn.Module):
-    def __init__(self, vocab_size, context_size, d_model, n_head, n_block):
+    def __init__(self, vocab_size, context_size, d_model, n_head, n_block, dropout=0.1):
         super(GPT, self).__init__()
         
         self.vocab_size = vocab_size
@@ -223,8 +223,8 @@ class GPT(nn.Module):
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         # self.position_embedding = PositionEmbedding(context_size, d_model)
         self.positional_encoding = PositionalEncoding(context_size, d_model)
-        self.dropout = nn.Dropout(0.1)
-        self.transformer_block = nn.ModuleList([TransformerBlock(d_model, n_head) for _ in range(self.n_block)])
+        self.dropout = nn.Dropout(dropout)
+        self.transformer_block = nn.ModuleList([TransformerBlock(d_model, n_head, dropout) for _ in range(self.n_block)])
         self.norm = nn.LayerNorm(d_model)
         self.fc = nn.Linear(d_model * context_size, vocab_size)
         
