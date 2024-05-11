@@ -98,7 +98,7 @@ class PositionalEncoding(nn.Module):
 class ScaledDotProductAttention(nn.Module):
     def __init__(self, d_model, attn_dropout=0.1):
         super().__init__()
-        self.sqrt_d_k = d_model ** 0.5 # sqrt(d_k)　と同じ
+        self.sqrt_d_k = d_model ** 0.5 # sqrt(d_k)と同じ
         self.dropout = nn.Dropout(attn_dropout)
 
     def forward(self, q, k, v, mask=None):
@@ -109,6 +109,7 @@ class ScaledDotProductAttention(nn.Module):
             attn = attn.masked_fill(mask == 0, -1e9)
 
         attn = F.softmax(attn, dim=-1)
+        # 特定の単語に注意を払いすぎないようにAttention scoreにもdropoutを適用します
         attn = self.dropout(attn)
         output = torch.matmul(attn, v)
 
@@ -177,7 +178,7 @@ class TransformerBlock(nn.Module):
 
         self.norm_1 = nn.LayerNorm(d_model)
         self.norm_2 = nn.LayerNorm(d_model)
-        self.attn = MultiHeadAttention(n_head, d_model)
+        self.attn = MultiHeadAttention(n_head, d_model, dropout)
         self.ff = FeedForward(d_model, dropout)
 
         # Initialize gamma (weight) with N(0, 0.02)
