@@ -8,7 +8,7 @@ from IPython.display import HTML, display
 from whiteGPT.source.GPT import create_pad_mask
 
 """ 改行処理 """
-def set_css():
+def set_css(*args, **kwargs):
   display(HTML('''
   <style>
     pre {

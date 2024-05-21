@@ -10,16 +10,16 @@ with open(os.path.join(current_path, 'README.md'), encoding='utf-8') as f:
 
 
 setup(
-    name='toyGPT', 
+    name='whiteGPT', 
     packages=find_packages(exclude=('*.pyc',)),
     version='0.0.0.0',
     license='MIT', 
     install_requires=[],
     author='Michiyasu Uchiyama',
-    description='toyGPT', 
+    description='whiteGPT', 
     long_description=long_description,
     long_description_content_type='text/markdown', 
-    keywords='toyGPT', 
+    keywords='whiteGPT', 
 
     classifiers=[
         'License :: OSI Approved :: MIT License',
