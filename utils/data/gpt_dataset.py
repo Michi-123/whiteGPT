@@ -590,17 +590,19 @@ class AkutagawaSampleDataset(JpTextDataset):
         from IPython.display import clear_output
         from IPython.core.display import display, HTML
 
+        print(corpus, end="")
+
         corpus = self.tagger.parse(corpus)
         source = self.sequence2indices(corpus)
         source = source[:self.max_sequence_length]
         indices = copy.copy(source)
-        pad = self.word2index['<PAD>']
+        # pad = self.word2index['<PAD>']
         mask = self._create_attention_mask()
 
         model.eval()
         
-        html = "<style>div.output_scroll { width: 100%; }</style>"
-        display(HTML(html))
+        #html = "<style>div.output_scroll { width: 100%; }</style>"
+        #display(HTML(html))
 
         for _ in range(n):
             inputs = torch.LongTensor([source])
@@ -619,8 +621,9 @@ class AkutagawaSampleDataset(JpTextDataset):
             source.append(index)
             source = source[1:]
             text = self.indices2sequence(indices)
-            display(HTML(text))
-            clear_output(wait=True)
+            #display(HTML(text))
+            #clear_output(wait=True)
+            print(self.index2word[index] ,end="")
             
             if t != None:
                 time.sleep(t) # 視覚効果
