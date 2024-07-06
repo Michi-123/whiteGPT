@@ -221,7 +221,7 @@ class GPT(nn.Module):
         self.vocab_size = vocab_size
         self.context_size = context_size
         self.d_model = d_model
-        self.n_block = n_head
+        self.n_head = n_head
         self.n_block = n_block
         
         self.token_embedding = nn.Embedding(vocab_size, d_model)
