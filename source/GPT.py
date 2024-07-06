@@ -213,7 +213,7 @@ class TransformerBlock(nn.Module):
         return x, w
 
 
-#@title GPT
+#@title GPT-Original
 class GPT(nn.Module):
     def __init__(self, vocab_size, context_size, d_model, n_head, n_block, dropout=0.1):
         super(GPT, self).__init__()

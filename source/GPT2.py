@@ -8,24 +8,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
+from .GPT import TransformerBlock, PositionalEncoding, PositionEmbedding, GPT
+
+
 """ GPTモデル """
 
 #@title TransformerBlock
-class TransformerBlock(nn.Module):
-    def __init__(self, d_model, n_head, dropout=0.1):
-        super(TransformerBlock, self).__init__()
-
-        self.norm_1 = nn.LayerNorm(d_model)
-        self.norm_2 = nn.LayerNorm(d_model)
-        self.attn = MultiHeadAttention(n_head, d_model, dropout)
-        self.ff = FeedForward(d_model, dropout)
-
-        # Initialize gamma (weight) with N(0, 0.02)
-        nn.init.normal_(self.norm_1.weight, mean=0, std=0.02)
-        nn.init.normal_(self.norm_2.weight, mean=0, std=0.02)
+class TransformerBlock(TransformerBlock):
 
     # GPT-2
     def forward(self, x, past=None, mask=None):
+
         _x = x
         x = self.norm_1(x)
 
@@ -51,9 +44,9 @@ class TransformerBlock(nn.Module):
 
 
 #@title GPT2
-class GPT2(nn.Module):
+class GPT2(GPT):
     def __init__(self, vocab_size, context_size, d_model, n_head, n_block, dropout=0.1):
-        super(GPT2, self).__init__()
+        super(GPT, self).__init__()
         
         self.vocab_size = vocab_size
         self.context_size = context_size
@@ -72,6 +65,7 @@ class GPT2(nn.Module):
         init.xavier_uniform_(self.fc.weight)        
         init.normal_(self.token_embedding.weight, mean=0.0, std=0.02)
         # init.normal_(self.position_embedding.embedding.weight, mean=0.0, std=0.02)
+
 
     def forward(self, x, past=None, mask=None):
         # 埋め込み
