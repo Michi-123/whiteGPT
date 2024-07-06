@@ -2,7 +2,7 @@ import sys
 sys.path.append('./')
 
 from whiteGPT.source.GPT import GPT
-import whiteGPT.source.word2vec as word2vec
+from whiteGPT.source.GPT2 import GPT2
 from whiteGPT.source.word2vec import CBOW
 from whiteGPT.source.GPT import create_attention_mask
 from whiteGPT.source.GPT import create_pad_mask
@@ -17,3 +17,4 @@ from whiteGPT.utils.data.gpt_dataset import ClassifierDataset
 from whiteGPT.utils.functions.evaluate import Evaluate
 from whiteGPT.utils.functions.evaluate import classifier_test
 from whiteGPT.utils.functions.visualize_attention_weights_ import visualize_attention_weights
+import whiteGPT.source.word2vec as word2vec

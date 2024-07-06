@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Attention Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: center;
+        }
+        th, td {
+            width: 50px;
+        }
+        .vector-table {
+            margin-top: 20px;
+        }
+        .canvas-container {
+            margin-top: 20px;
+        }
+        input[type="number"] {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Self-Attention Demo</h1>
+    <h3>"The cat sat on the mat."</h3>
+    <table>
+        <caption>Input Vectors</caption>
+        <thead>
+            <tr>
+                <th>Word</th>
+                <th>Dim 1</th>
+                <th>Dim 2</th>
+                <th>Dim 3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>The</td><td><input type="number" id="vec0-0" value="1"></td><td><input type="number" id="vec0-1" value="0"></td><td><input type="number" id="vec0-2" value="0"></td></tr>
+            <tr><td>Cat</td><td><input type="number" id="vec1-0" value="0"></td><td><input type="number" id="vec1-1" value="1"></td><td><input type="number" id="vec1-2" value="0"></td></tr>
+            <tr><td>Sat</td><td><input type="number" id="vec2-0" value="0"></td><td><input type="number" id="vec2-1" value="0"></td><td><input type="number" id="vec2-2" value="1"></td></tr>
+            <tr><td>On</td><td><input type="number" id="vec3-0" value="1"></td><td><input type="number" id="vec3-1" value="1"></td><td><input type="number" id="vec3-2" value="0"></td></tr>
+            <tr><td>The</td><td><input type="number" id="vec4-0" value="0"></td><td><input type="number" id="vec4-1" value="1"></td><td><input type="number" id="vec4-2" value="1"></td></tr>
+            <tr><td>Mat</td><td><input type="number" id="vec5-0" value="1"></td><td><input type="number" id="vec5-1" value="0"></td><td><input type="number" id="vec5-2" value="1"></td></tr>
+        </tbody>
+    </table>
+    <table>
+        <caption>Weight Matrices</caption>
+        <thead>
+            <tr>
+                <th></th>
+                <th>W_Q</th>
+                <th>W_Q</th>
+                <th>W_Q</th>
+                <th></th>
+                <th>W_K</th>
+                <th>W_K</th>
+                <th>W_K</th>
+                <th></th>
+                <th>W_V</th>
+                <th>W_V</th>
+                <th>W_V</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td></td><td><input type="number" id="wq0-0" value="1"></td><td><input type="number" id="wq0-1" value="0"></td><td><input type="number" id="wq0-2" value="0"></td>
+                <td></td><td><input type="number" id="wk0-0" value="0"></td><td><input type="number" id="wk0-1" value="1"></td><td><input type="number" id="wk0-2" value="0"></td>
+                <td></td><td><input type="number" id="wv0-0" value="0"></td><td><input type="number" id="wv0-1" value="0"></td><td><input type="number" id="wv0-2" value="1"></td></tr>
+            <tr><td></td><td><input type="number" id="wq1-0" value="0"></td><td><input type="number" id="wq1-1" value="1"></td><td><input type="number" id="wq1-2" value="0"></td>
+                <td></td><td><input type="number" id="wk1-0" value="0"></td><td><input type="number" id="wk1-1" value="0"></td><td><input type="number" id="wk1-2" value="1"></td>
+                <td></td><td><input type="number" id="wv1-0" value="1"></td><td><input type="number" id="wv1-1" value="0"></td><td><input type="number" id="wv1-2" value="0"></td></tr>
+            <tr><td></td><td><input type="number" id="wq2-0" value="0"></td><td><input type="number" id="wq2-1" value="0"></td><td><input type="number" id="wq2-2" value="1"></td>
+                <td></td><td><input type="number" id="wk2-0" value="1"></td><td><input type="number" id="wk2-1" value="0"></td><td><input type="number" id="wk2-2" value="0"></td>
+                <td></td><td><input type="number" id="wv2-0" value="0"></td><td><input type="number" id="wv2-1" value="1"></td><td><input type="number" id="wv2-2" value="0"></td></tr>
+        </tbody>
+    </table>
+    <button onclick="calculateAttention()">Calculate Attention</button>
+    <div class="canvas-container">
+        <canvas id="attentionCanvas" width="600" height="400"></canvas>
+    </div>
+    <script>
+        function getInputVectors() {
+            let vectors = [];
+            for (let i = 0; i < 6; i++) {
+                let vector = [];
+                for (let j = 0; j < 3; j++) {
+                    vector.push(parseFloat(document.getElementById(`vec${i}-${j}`).value));
+                }
+                vectors.push(vector);
+            }
+            return vectors;
+        }
+
+        function getWeightMatrix(prefix) {
+            let matrix = [];
+            for (let i = 0; i < 3; i++) {
+                let row = [];
+                for (let j = 0; j < 3; j++) {
+                    row.push(parseFloat(document.getElementById(`${prefix}${i}-${j}`).value));
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function multiplyMatrices(a, b) {
+            let result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        sum += a[i][k] * b[k][j];
+                    }
+                    result[i][j] = sum;
+                }
+            }
+            return result;
+        }
+
+        function transposeMatrix(matrix) {
+            return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+        }
+
+        function calculateAttention() {
+            const inputVectors = getInputVectors();
+            const W_Q = getWeightMatrix('wq');
+            const W_K = getWeightMatrix('wk');
+            const W_V = getWeightMatrix('wv');
+
+            const Q = multiplyMatrices(inputVectors, W_Q);
+            const K = multiplyMatrices(inputVectors, W_K);
+            const V = multiplyMatrices(inputVectors, W_V);
+
+            const K_T = transposeMatrix(K);
+            const attentionScores = multiplyMatrices(Q, K_T);
+
+            let attentionCanvas = document.getElementById("attentionCanvas");
+            let ctx = attentionCanvas.getContext("2d");
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, attentionCanvas.width, attentionCanvas.height);
+
+            // Set font and color for the canvas
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "black";
+
+            // Define dimensions
+            const cellWidth = 80;
+            const cellHeight = 30;
+
+            // Draw the attention score matrix
+            for (let i = 0; i < attentionScores.length; i++) {
+                for (let j = 0; j < attentionScores[i].length; j++) {
+                    // Draw the cell
+                    ctx.strokeRect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
+
+                    // Draw the attention score
+                    ctx.fillText(
+                        attentionScores[i][j].toFixed(2),
+                        j * cellWidth + cellWidth / 2 - 15,
+                        i * cellHeight + cellHeight / 2 + 5
+                    );
+                }
+            }
+
+            // Draw row and column labels
+            const words = ["The", "Cat", "Sat", "On", "The", "Mat"];
+            ctx.font = "bold 16px Arial";
+            for (let i = 0; i < words.length; i++) {
+                ctx.fillText(words[i], attentionScores.length * cellWidth + 10, i * cellHeight + cellHeight / 2 + 5);
+                ctx.fillText(words[i], i * cellWidth + cellWidth / 2 - 15, attentionScores.length * cellHeight + 20);
+            }
+        }
+    </script>
+</body>
+</html>

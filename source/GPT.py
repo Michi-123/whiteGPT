@@ -6,9 +6,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 import torch.nn.init as init
-from torch.optim.lr_scheduler import StepLR
 
 """ GPTモデル """
 
@@ -102,18 +100,19 @@ class ScaledDotProductAttention(nn.Module):
         self.dropout = nn.Dropout(attn_dropout)
 
     def forward(self, q, k, v, mask=None):
-        attn = torch.matmul(q, k.transpose(2, 3)) /  self.sqrt_d_k
+        score = torch.matmul(q, k.transpose(2, 3)) / self.sqrt_d_k
 
         if mask is not None:
-            #attn = attn.masked_fill(mask == 0, float("-inf"))
-            attn = attn.masked_fill(mask == 0, -1e9)
+            # infは数値ではないのでプログラムによってはエラーを起こします。
+            #score = score.masked_fill(mask == 0, float("-inf"))
+            score = score.masked_fill(mask == 0, -1e9) 
 
-        attn = F.softmax(attn, dim=-1)
+        attn_weights = F.softmax(score, dim=-1)
         # 特定の単語に注意を払いすぎないようにAttention scoreにもdropoutを適用します
-        attn = self.dropout(attn)
-        output = torch.matmul(attn, v)
+        attn_weights = self.dropout(attn_weights)
+        attention_output = torch.matmul(attn_weights, v)
 
-        return output, attn
+        return attention_output, attn_weights
 
 #@title  Multi-Head Attention
 class MultiHeadAttention(nn.Module):
@@ -121,37 +120,53 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.n_head = n_head
         self.d_model = d_model
-        self.fc_q = nn.Linear(d_model, d_model * n_head)
-        self.fc_k = nn.Linear(d_model, d_model * n_head)
-        self.fc_v = nn.Linear(d_model, d_model * n_head)
-        self.attn = ScaledDotProductAttention(d_model, dropout)
-        self.fc = nn.Linear(n_head * d_model, d_model)
+        self.fc_q = nn.Linear(d_model, d_model) # d_model * n_head // n_head
+        self.fc_k = nn.Linear(d_model, d_model) # d_model * n_head // n_head
+        self.fc_v = nn.Linear(d_model, d_model) # d_model * n_head // n_head
+        self.attention = ScaledDotProductAttention(d_model, dropout)
+        self.fc = nn.Linear(d_model, d_model) # d_model * n_head // n_head
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, v, mask=None):
-        N = q.size(0) # バッチサイズ（Transformerの場合、QKVは同じサイズ）
-        S = q.size(1) # ウィンドウサイズ（Transformerの場合、QKVは同じサイズ）
+        N = q.size(0) # バッチサイズ
+        S = q.size(1) # ウィンドウサイズ
         H = self.n_head # マルチヘッドの数
-        D = self.d_model # 潜在区間の次元（Cross Attentonの場合、個別に定期）
+        D = self.d_model // self.n_head # 潜在空間の次元。（Cross-Attentionの場合、個別に定義します）
 
         # 線形変換
         q = self.fc_q(q).view(N, S, H, D)
         k = self.fc_k(k).view(N, S, H, D)
         v = self.fc_v(v).view(N, S, H, D)
 
-        # Scaled dot-product attention
-        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
-        q, attn = self.attn(q, k, v, mask=mask)
+        # 展開
+        q = q.view(N, S, H, D)
+        k = k.view(N, S, H, D)
+        v = v.view(N, S, H, D)
 
+        # 転置
+        q = q.transpose(1, 2)
+        k = k.transpose(1, 2)
+        v = v.transpose(1, 2)
+        
+        # Scaled dot-product attention
+        x, attn_weights = self.attention(q, k, v, mask=mask)
+
+        # 転置
+        x = x.transpose(1, 2)
+        
         # 結合
-        q = q.transpose(1, 2).contiguous().view(N, S, -1)
+        x = x.contiguous()
+        
+        # 展開
+        x = x.view(N, S, -1)
 
         # 線形変換
-        q = self.fc(q)
-        
-        q = self.dropout(q)
+        x = self.fc(x)
 
-        return q, attn
+        # 正則化
+        x = self.dropout(x)
+
+        return x, attn_weights
 
 
 #@title FeedForward
@@ -186,7 +201,7 @@ class TransformerBlock(nn.Module):
         nn.init.normal_(self.norm_2.weight, mean=0, std=0.02)
 
     # GPT-1
-    def _forward(self, x, mask=None):
+    def forward(self, x, mask=None):
         residual_x = x
         x, w = self.attn(x, x, x, mask)
         x = self.norm_1(x + residual_x)
@@ -197,18 +212,6 @@ class TransformerBlock(nn.Module):
 
         return x, w
 
-    # GPT-2
-    def forward(self, x, mask=None):
-        _x = x
-        x = self.norm_1(x)
-        x, w = self.attn(x, x, x, mask)
-        
-        _x = x + _x
-
-        x = self.norm_2(_x)
-        x = self.ff(x) + _x
-
-        return x, w
 
 #@title GPT
 class GPT(nn.Module):
