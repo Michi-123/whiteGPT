@@ -246,6 +246,9 @@ class GPT(nn.Module):
         for block in self.transformer_block:
             x, w = block(x, mask)
       
+        # 正規化(GPT-2仕様)
+        x = self.norm(x)      
+      
         x = x.view(-1, self.context_size * self.d_model)
         
         # 線形変換
