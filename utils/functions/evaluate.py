@@ -85,6 +85,37 @@ class Evaluate:
 
             print(self.dataset.index2word[index] ,end="")
   
+    def generate2(self, corpus, model, mask=None, max_token_size=500):
+        model.eval()
+        model.cpu()
+        pad = self.dataset.word2index['<PAD>']
+
+        source = self.dataset.sequence2indices(corpus)
+        source = source[:self.context_size]
+        #indices = copy.copy(source)
+
+        for i in range(max_token_size):
+            inputs = [source + [pad] * (self.context_size - len(source))]
+            inputs = torch.LongTensor(inputs).cpu()
+            
+            if mask is not None:
+                mask = create_pad_mask(inputs)
+
+            outputs ,_, _ = model(inputs, None, mask)
+            if 1:
+                index = torch.argmax(outputs).item()
+            else:
+                k = 3
+                opk_values, topk_indices = torch.topk(outputs, k)
+                # k個の最大値からランダムに1つをサンプリング
+                topk_index = torch.randint(0, topk_indices.size(1), (1,))
+                index = topk_indices[0, topk_index.item()].tolist()
+
+            #indices.append(index)
+            source.append(index)
+            source = source[1:]
+
+            print(self.dataset.index2word[index] ,end="")
 
     def input_tokens(self, corpus):
         pad = self.dataset.word2index["<PAD>"]
