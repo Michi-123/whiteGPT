@@ -17,7 +17,7 @@ from .GPT import TransformerBlock, PositionalEncoding, PositionEmbedding, GPT
 class TransformerBlock(TransformerBlock):
     # GPT-2
     def __init__(self, d_model, n_head, dropout=0.1):
-        super(TransformerBlock, self).__init__()
+        super(TransformerBlock, self).__init__(d_model, n_head, dropout=0.1)
 
         self.norm_1 = nn.LayerNorm(d_model)
         self.norm_2 = nn.LayerNorm(d_model)
