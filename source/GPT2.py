@@ -8,13 +8,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
-from .GPT import TransformerBlock, PositionalEncoding, PositionEmbedding, GPT
+from .GPT import MultiHeadAttention, FeedForward, TransformerBlock, PositionalEncoding, PositionEmbedding, GPT
 
 
 """ GPTモデル """
 
 #@title TransformerBlock
-class TransformerBlock(TransformerBlock):
+class TransformerBlock(nn.Module):
     # GPT-2
     def __init__(self, d_model, n_head, dropout=0.1):
         super(TransformerBlock, self).__init__(d_model, n_head, dropout=0.1)
