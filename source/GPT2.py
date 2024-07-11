@@ -17,7 +17,7 @@ from .GPT import MultiHeadAttention, FeedForward, TransformerBlock, PositionalEn
 class TransformerBlock(nn.Module):
     # GPT-2
     def __init__(self, d_model, n_head, dropout=0.1):
-        super(TransformerBlock, self).__init__(d_model, n_head, dropout=0.1)
+        super(TransformerBlock, self).__init__()
 
         self.norm_1 = nn.LayerNorm(d_model)
         self.norm_2 = nn.LayerNorm(d_model)
