@@ -3,6 +3,7 @@ sys.path.append('./')
 
 from whiteGPT.source.GPT import GPT
 from whiteGPT.source.GPT2 import GPT2
+from whiteGPT.source.GPT2.1 import GPT2.1
 from whiteGPT.source.word2vec import CBOW
 from whiteGPT.source.GPT import create_attention_mask
 from whiteGPT.source.GPT import create_pad_mask
