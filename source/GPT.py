@@ -120,11 +120,12 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         self.n_head = n_head
         self.d_model = d_model
-        self.fc_q = nn.Linear(d_model, d_model) # d_model * n_head // n_head
-        self.fc_k = nn.Linear(d_model, d_model) # d_model * n_head // n_head
-        self.fc_v = nn.Linear(d_model, d_model) # d_model * n_head // n_head
+        # 隠れ層の次元がd_modelである理由は、d_model = d_model * n_head // n_head であるため
+        self.fc_q = nn.Linear(d_model, d_model)
+        self.fc_k = nn.Linear(d_model, d_model)
+        self.fc_v = nn.Linear(d_model, d_model)
         self.attention = ScaledDotProductAttention(d_model, dropout)
-        self.fc = nn.Linear(d_model, d_model) # d_model * n_head // n_head
+        self.fc = nn.Linear(d_model, d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, v, mask=None):
@@ -134,9 +135,9 @@ class MultiHeadAttention(nn.Module):
         D = self.d_model // self.n_head # 潜在空間の次元。（Cross-Attentionの場合、個別に定義します）
 
         # 線形変換
-        q = self.fc_q(q).view(N, S, H, D)
-        k = self.fc_k(k).view(N, S, H, D)
-        v = self.fc_v(v).view(N, S, H, D)
+        q = self.fc_q(q)
+        k = self.fc_k(k)
+        v = self.fc_v(v)
 
         # 展開
         q = q.view(N, S, H, D)
