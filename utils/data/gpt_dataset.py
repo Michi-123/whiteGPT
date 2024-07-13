@@ -589,10 +589,11 @@ class AkutagawaSampleDataset(JpTextDataset):
         model.eval()
         model.cpu()
 
+        print(corpus, end="")
+
         corpus = self.tagger.parse(corpus)
         source = self.sequence2indices(corpus)
         source = source[:self.max_sequence_length]
-        print(corpus, end="")
 
         for i in range(max_token_size):
             inputs = torch.LongTensor([source]).cpu()
