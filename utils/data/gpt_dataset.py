@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1fi2vSIEM7wVjSrghdecjsbwDMxv5OiEd
 """
 # @title GptDataset
-
+import time
 import re
 import unicodedata
 import torch
@@ -584,47 +584,35 @@ class AkutagawaSampleDataset(JpTextDataset):
         s = self.max_sequence_length
         return (torch.triu(torch.ones((s, s)),1) == 0) * 1
 
-    def sample(self, model, corpus, n=500, t=None, use_topk=True):
-        import copy
-        import time
-        from IPython.display import clear_output
-        from IPython.core.display import display, HTML
-
-        print(corpus, end="")
+    def sample(self, model, corpus, n=500, t=None, use_topk=None):
+        max_token_size = n
+        model.eval()
+        model.cpu()
 
         corpus = self.tagger.parse(corpus)
         source = self.sequence2indices(corpus)
         source = source[:self.max_sequence_length]
-        indices = copy.copy(source)
-        # pad = self.word2index['<PAD>']
-        mask = self._create_attention_mask()
+        print(corpus, end="")
 
-        model.eval()
-        
-        #html = "<style>div.output_scroll { width: 100%; }</style>"
-        #display(HTML(html))
+        for i in range(max_token_size):
+            inputs = torch.LongTensor([source]).cpu()
+            mask = self. _create_attention_mask()
 
-        for _ in range(n):
-            inputs = torch.LongTensor([source])
-            outputs, _ = model(inputs, mask) 
-
-            if use_topk:
+            outputs ,_ = model(inputs, mask)
+            if not use_topk:
+                index = torch.argmax(outputs).item()
+            else:
                 k = 3
                 opk_values, topk_indices = torch.topk(outputs, k)
                 # k個の最大値からランダムに1つをサンプリング
                 topk_index = torch.randint(0, topk_indices.size(1), (1,))
                 index = topk_indices[0, topk_index.item()].tolist()
-            else:
-                index = torch.argmax(outputs).item()
 
-            indices.append(index)
             source.append(index)
             source = source[1:]
-            text = self.indices2sequence(indices)
-            #display(HTML(text))
-            #clear_output(wait=True)
+
             print(self.index2word[index] ,end="")
-            
+
             if t != None:
                 time.sleep(t) # 視覚効果
                 

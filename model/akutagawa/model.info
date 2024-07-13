@@ -1,0 +1,9 @@
+vocab_size = 897
+context_size = 10
+d_model = 64
+n_head = 2
+n_block = 3
+
+batch_size = 64
+leraning_rate = 0.00025
+epoch_num = 200
