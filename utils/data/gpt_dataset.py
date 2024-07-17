@@ -654,8 +654,8 @@ class FineTuningDataset(Dataset):
             Q += "？"
 
             # 形態素解析
-            Q = tagger.parse(Q)
-            A = tagger.parse(A)
+            Q = self.tagger.parse(Q)
+            A = self.tagger.parse(A)
 
             tokenized_Q = self._create_tokenized_corpus(Q)
             tokenized_A = self._create_tokenized_corpus(A)
