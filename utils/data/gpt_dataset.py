@@ -630,6 +630,109 @@ class AkutagawaSampleDataset(JpTextDataset):
         return html
 
 
+class FineTuningDataset(Dataset):
+    def __init__(self, vocab, corpus, window_size):
+        self.tagger = tagger
+        self.window_size = window_size
+        self.vocab_size = vocab.vocab_size
+        self.word2index = vocab.word2index
+        self.index2word = vocab.index2word
+        self.tokenized_corpora = self._create_tokenized_corpora(corpus)
+
+    def tokenize(self, corpus):
+        corpus = corpus.lower()
+        return re.findall(r'\w+|[^\w\s]', corpus)
+
+    def _create_tokenized_corpora(self, corpus):
+        tokenized_corpora = []
+        tokenized_line = []
+        sequence_size = self.window_size + 1
+        corpus_list = corpus.split('\n') # 行分割
+
+        for corpus in corpus_list: # 1行ずつ処理
+            Q, A = corpus.split('？') # Q&Aに分割
+            Q += "？"
+
+            # 形態素解析
+            Q = tagger.parse(Q)
+            A = tagger.parse(A)
+
+            tokenized_Q = self._create_tokenized_corpus(Q)
+            tokenized_A = self._create_tokenized_corpus(A)
+
+            # Padding処理
+            pad_index = self.word2index['<PAD>']
+            tokenized_Q = tokenized_Q + [pad_index] * self.window_size
+            tokenized_Q = tokenized_Q[:self.window_size]
+
+            tokenized_corpus = tokenized_Q + tokenized_A
+
+            for i in range(len(tokenized_corpus) - sequence_size+1):
+                tokenized_sequence = tokenized_corpus[i:i + sequence_size] #['は', '晴れ', 'です']
+                tokenized_corpora.append(tokenized_sequence)
+
+        return tokenized_corpora
+
+    def _create_tokenized_corpus(self, corpus):
+        corpus = self.tokenize(corpus)
+
+        tokenized_corpus = []
+        
+        for word in corpus:
+
+            if word in self.word2index:
+                index = self.word2index[word] 
+            else: 
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+                
+            tokenized_corpus.append(index)
+        # tokenized_corpus = [self.word2index[word] for word in corpus]
+        
+        return tokenized_corpus
+
+    def tokenized_corpus2indices(self, tokenized_corpus):
+        indices = []
+        for word in tokenized_corpus:
+            try:
+                index = self.word2index[word] 
+            except: 
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            indices.append(index)
+        return indices        
+
+    def __len__(self):
+        return len(self.tokenized_corpora)
+
+    def __getitem__(self, idx):
+        tokenized_corpus = self.tokenized_corpora[idx]
+        source = tokenized_corpus[:self.window_size]
+        target = tokenized_corpus[self.window_size]
+
+        return {
+            'source': torch.tensor(source),
+            'target': torch.tensor(target),
+        }
+
+
+    def sequence2indices(self, sequence):
+        indices = []
+        for word in sequence.split():
+            try:
+                index = self.word2index[word]
+            except:
+                index = self.word2index['<UNK>'] # 未登録の単語として処理
+            indices.append(index)
+                
+        return indices
+
+    def indices2sequence(self, indices):
+        sequence = ''
+        for index in indices:
+            letter = self.index2word[index]
+            sequence += letter
+        return sequence
+
+
 #@title TranslationPreTrainDataset
 class TranslationPreTrainDataset(Dataset):
     def __init__(self, corpus_path, max_sequence_length):
