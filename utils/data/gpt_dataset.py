@@ -631,7 +631,7 @@ class AkutagawaSampleDataset(JpTextDataset):
 
 
 class FineTuningDataset(Dataset):
-    def __init__(self, vocab, corpus, window_size):
+    def __init__(self, vocab, corpus, window_size, tagger):
         self.tagger = tagger
         self.window_size = window_size
         self.vocab_size = vocab.vocab_size
