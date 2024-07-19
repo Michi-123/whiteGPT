@@ -660,7 +660,7 @@ class FineTuningDataset(Dataset):
             tokenized_Q = self._create_tokenized_corpus(Q)
             tokenized_A = self._create_tokenized_corpus(A)
             
-            tokenized_A += self.word2index['<EOS>']
+            tokenized_A = tokenized_A + [self.word2index['<EOS>']]
 
             # Padding処理
             pad_index = self.word2index['<PAD>']
