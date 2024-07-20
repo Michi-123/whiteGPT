@@ -647,9 +647,10 @@ class FineTuningDataset(Dataset):
         tokenized_corpora = []
         tokenized_line = []
         sequence_size = self.window_size + 1
-        corpus_list = corpus.split('\n') # 行分割
+        corpus_list = corpus.split() # 行分割
 
         for corpus in corpus_list: # 1行ずつ処理
+            if corpus 
             Q, A = corpus.split('？') # Q&Aに分割
             Q += "？"
 
