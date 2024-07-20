@@ -650,7 +650,6 @@ class FineTuningDataset(Dataset):
         corpus_list = corpus.split() # 行分割
 
         for corpus in corpus_list: # 1行ずつ処理
-            if corpus 
             Q, A = corpus.split('？') # Q&Aに分割
             Q += "？"
 
