@@ -26,6 +26,7 @@ class Evaluate:
     def __init__(self, dataset, context_size):
         self.dataset = dataset
         self.context_size = context_size
+        self.tagger = None
 
     def predict(self, source_indices, target_indices, outputs):
         # INPUT
