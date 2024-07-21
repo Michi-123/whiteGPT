@@ -645,33 +645,38 @@ class FineTuningDataset(Dataset):
 
     def _create_tokenized_corpora(self, corpus):
         tokenized_corpora = []
-        tokenized_line = []
         sequence_size = self.window_size + 1
-        corpus_list = corpus.split() # 行分割
+        pad_index = self.word2index['<PAD>']
 
-        for corpus in corpus_list: # 1行ずつ処理
-            Q, A = corpus.split('？') # Q&Aに分割
-            Q += "？"
+        corpus_list = corpus.split()  # 行分割
+
+        for line in corpus_list:  # 1行ずつ処理
+            try:
+                Q, A = line.split('？')
+            except:
+                continue
+
+            Q += '？'
 
             # 形態素解析
-            Q = self.tagger.parse(Q)
-            A = self.tagger.parse(A)
-
+            Q = tagger.parse(Q)
+            A = tagger.parse(A)
+            
             tokenized_Q = self._create_tokenized_corpus(Q)
             tokenized_A = self._create_tokenized_corpus(A)
-            
-            tokenized_A = tokenized_A + [self.word2index['<EOS>']]
 
-            # Padding処理
-            pad_index = self.word2index['<PAD>']
-            tokenized_Q = tokenized_Q + [pad_index] * self.window_size
-            tokenized_Q = tokenized_Q[:self.window_size]
-
-            tokenized_corpus = tokenized_Q + tokenized_A
-
-            for i in range(len(tokenized_corpus) - sequence_size+1):
-                tokenized_sequence = tokenized_corpus[i:i + sequence_size] #['は', '晴れ', 'です']
-                tokenized_corpora.append(tokenized_sequence)
+            # 1トークンずつスライドしてデータセットを作成
+            for i in range(len(tokenized_A)):
+                
+                source = tokenized_Q + tokenized_A[:i]
+                # パディング
+                if len(source) < self.window_size:
+                    source += [pad_index] * (self.window_size - len(source))
+                else:
+                    source = source[-self.window_size:]
+                
+                target = tokenized_A[i]
+                tokenized_corpora.append((source, target))
 
         return tokenized_corpora
 
@@ -688,7 +693,6 @@ class FineTuningDataset(Dataset):
                 index = self.word2index['<UNK>'] # 未登録の単語として処理
                 
             tokenized_corpus.append(index)
-        # tokenized_corpus = [self.word2index[word] for word in corpus]
         
         return tokenized_corpus
 
@@ -707,14 +711,13 @@ class FineTuningDataset(Dataset):
 
     def __getitem__(self, idx):
         tokenized_corpus = self.tokenized_corpora[idx]
-        source = tokenized_corpus[:self.window_size]
-        target = tokenized_corpus[self.window_size]
+        source = tokenized_corpus[0]
+        target = tokenized_corpus[1]
 
         return {
             'source': torch.tensor(source),
             'target': torch.tensor(target),
         }
-
 
     def sequence2indices(self, sequence):
         indices = []

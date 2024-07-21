@@ -119,23 +119,24 @@ class Evaluate:
             print(self.dataset.index2word[index] ,end="")
 
 
-    def generate_fine_tuned(self, corpus, model, mask=None, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
+    def generate_fine_tuned(self, sentence, model, mask, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
 
-        source = self.dataset.sequence2indices(corpus)
+        parsed_sentence = self.tagger.parse(sentence)
+        source = self.dataset.sequence2indices(parsed_sentence)
         source = source[:self.context_size]
-        #indices = copy.copy(source)
-        source = source + [pad] * (self.context_size - len(source))
 
         for i in range(max_token_size):
-            inputs = [source]
-            # print('inputs', inputs)
-            inputs = torch.LongTensor(inputs).cpu()
-            
-            if mask is not None:
-                mask = create_pad_mask(inputs)
+            if len(source) <= self.context_size:
+                inputs = source + [pad] * self.context_size
+                inputs = inputs[:self.context_size]
+            else:
+                source = source[1:]
+                inputs = source
+            # print(self.dataset.indices2sequence(inputs))
+            inputs = torch.LongTensor([inputs]).cpu()
 
             outputs ,_, _ = model(inputs, None, mask)
             if top_k == 0:
@@ -146,11 +147,8 @@ class Evaluate:
 
                 # topk_values をSoftmax で確率分布に変換
                 topk_values = torch.softmax(topk_values, dim=-1)
-
-                # print('topk_values',topk_values)
                 
-                # top-p で切り捨て
-                # Handle the case where no values are greater than top_p
+                # top-p で切り捨て:Handle the case where no values are greater than top_p
                 valid_indices = topk_values > top_p
                 if valid_indices.any():
                     topk_indices = topk_indices[valid_indices]
@@ -161,17 +159,13 @@ class Evaluate:
                 else:
                     # If no values are greater than top_p, take the most probable index (index 0)
                     index = topk_indices[0, 0].item()  # Access the first element of the first dimension
-
                 
-            #indices.append(index)
             source.append(index)
-            source = source[1:]
 
             print(self.dataset.index2word[index] ,end="")
 
             if self.dataset.index2word[index] == eos:
                 break
-
 
     def input_tokens(self, corpus):
         pad = self.dataset.word2index["<PAD>"]
