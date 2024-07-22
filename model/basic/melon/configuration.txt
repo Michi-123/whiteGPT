@@ -1,0 +1,12 @@
+context_size = 10
+d_model = 64
+n_head = 2
+n_block = 2
+dropout = 0.2
+batch_size = 32
+learning_rate = 0.00025
+num_epochs = 100
+
+vocab_size = 588
+
+input = 'メロンは甘い香りのする果物で、夏に食べるのが一般的です。'
