@@ -54,7 +54,7 @@ class Evaluate:
         print()
 
 
-    def generate(self, corpus, model, mask=None, max_token_size=500):
+    def generate(self, corpus, model, mask=None, max_token_size=500, eos='<EOS>'):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
@@ -80,13 +80,20 @@ class Evaluate:
                 topk_index = torch.randint(0, topk_indices.size(1), (1,))
                 index = topk_indices[0, topk_index.item()].tolist()
 
+
             #indices.append(index)
             source.append(index)
             source = source[1:]
+            
+            next_word = self.dataset.index2word[index]
 
-            print(self.dataset.index2word[index] ,end="")
+            print(next_word ,end="")
+            
+            if next_word == eos:
+                break
+            
   
-    def generate2(self, corpus, model, mask=None, max_token_size=500, topk=0):
+    def generate2(self, corpus, model, mask=None, max_token_size=500, topk=0, eos='<EOS>'):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
@@ -115,8 +122,13 @@ class Evaluate:
             #indices.append(index)
             source.append(index)
             source = source[1:]
+            
+            next_word = self.dataset.index2word[index]
 
-            print(self.dataset.index2word[index] ,end="")
+            print(next_word, end="")
+            
+            if next_word == eos:
+                break
 
 
     def generate_fine_tuned(self, sentence, model, mask, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
@@ -161,10 +173,12 @@ class Evaluate:
                     index = topk_indices[0, 0].item()  # Access the first element of the first dimension
                 
             source.append(index)
+            
+            next_word = self.dataset.index2word[index]
 
-            print(self.dataset.index2word[index] ,end="")
+            print(next_word, end="")
 
-            if self.dataset.index2word[index] == eos:
+            if next_word == eos:
                 break
 
     def input_tokens(self, corpus):
