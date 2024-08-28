@@ -108,7 +108,7 @@ class ScaledDotProductAttention(nn.Module):
             score = score.masked_fill(mask == 0, -1e9) 
 
         attn_weights = F.softmax(score, dim=-1)
-        # 特定の単語に注意を払いすぎないようにAttention scoreにもdropoutを適用します
+        # 特定の単語に注意を払いすぎないようにdropoutを適用します
         attn_weights = self.dropout(attn_weights)
         attention_output = torch.matmul(attn_weights, v)
 
