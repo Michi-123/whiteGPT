@@ -35,7 +35,7 @@ class TransformerDataset(Dataset):
         for line in lines:
             sentence_en, sentence_ja, _ = line.split('\t') # ３番目の要素は捨て要素
             # 正規化
-            sentence_en = self._normalizeString(sentence_en)
+            sentence_en = self.normalizeString(sentence_en)
             # 形態素解析
             sentence_ja = self.tagger.parse(sentence_ja)[:-1]
             # Filter処理
@@ -84,7 +84,7 @@ class TransformerDataset(Dataset):
             pairs.append([indices_en, indices_ja])
         return pairs
 
-    def _normalizeString(self, sentence):
+    def normalizeString(self, sentence):
         sentence = sentence.lower().strip()
         sentence = re.sub(r"([.!?])", r" \1", sentence)
         sentence = re.sub(r"[^a-zA-Z0-9.!?]+", r" ", sentence)
