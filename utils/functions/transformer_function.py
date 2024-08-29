@@ -138,7 +138,7 @@ def test_from_dataset(model, dataset):
 
 
 #@title test_from_human_input
-def test_from_human_input(model, context_size):
+def test_from_human_input(model, dataset, context_size):
     PAD = 0
     SOS = 1
     EOS = 2
@@ -147,6 +147,9 @@ def test_from_human_input(model, context_size):
     model.eval()
     model.to(device)
 
+    vocab_en = dataset.vocab_en
+    vocab_ja = dataset.vocab_ja
+    
     sentence = input('英文')
     sequence = normalizeString(sentence)
     indices = []
