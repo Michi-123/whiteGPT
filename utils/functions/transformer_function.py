@@ -69,7 +69,10 @@ from torch.utils.data import DataLoader
 # @title test_from_dataset
 def test_from_dataset(model, dataset):
     # デバイスの設定
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = ('cpu')
+
+    vocab_en = dataset.vocab_en
+    vocab_ja = dataset.vocab_ja
 
     PAD = 0
     EOS = 2
@@ -131,7 +134,6 @@ def test_from_dataset(model, dataset):
                 if (i+1) % 3 == 0:
                     input('next')
         except:
-            
             print('Error.')
 
 
@@ -140,6 +142,8 @@ def test_from_human_input(model, context_size):
     PAD = 0
     SOS = 1
     EOS = 2
+    
+    device = 'cpu'
     model.eval()
     model.to(device)
 
