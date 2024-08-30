@@ -8,6 +8,34 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
+#@title PositionalEncoding
+class PositionalEncoding(nn.Module):
+    def __init__(self, context_size, d_model):
+        super(PositionalEncoding, self).__init__()
+
+        # Create a matrix of shape (context_size, d_model) with positional encodings
+        pe = torch.zeros(context_size, d_model)
+
+        # for pos in range(context_size):
+        #     for i in range(d_model):
+        #         if  i % 2 == 0:
+        #             pe[pos,i] = math.sin(pos/(10000**((2*i)/d_model)))
+        #         else:
+        #             pe[pos,i] = math.cos(pos/(10000**((2*(i-1))/d_model)))
+
+        for pos in range(context_size):
+            for i in range(0, d_model, 2):
+                pe[pos,i]   = math.sin(pos/(10000**((2*i)/d_model)))
+                pe[pos,i+1] = math.cos(pos/(10000**((2*i)/d_model)))
+
+        # 学習パラメーターの更新対象から外してクラス変数に確保(重要)
+        self.register_buffer('pe', pe.unsqueeze(0))
+
+    def forward(self, x):
+        # positional encodingを埋め込みベクトルへ追加します
+        return self.pe[:, :x.size(1)].detach()
+
+
 # @title ScaledDotProductAttention
 class ScaledDotProductAttention(nn.Module):
     def __init__(self, d_model, attn_dropout=0.1):
@@ -31,6 +59,23 @@ class ScaledDotProductAttention(nn.Module):
         attention_output = torch.matmul(attn_weights, v)
 
         return attention_output, attn_weights
+
+
+#@title FeedForward
+class FeedForward(nn.Module):
+    def __init__(self, d_model, dropout=0.1):
+        super(FeedForward, self).__init__()
+
+        self.fc1 = nn.Linear(d_model, d_model * 4 )
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(d_model * 4, d_model)
+
+    def forward(self, x):
+        h = self.fc1(x)
+        h = F.gelu(h)
+        h = self.fc2(h)
+        h = self.dropout(h)
+        return h
 
 
 #@title  Multi-Head Attention
@@ -89,6 +134,7 @@ class MultiHeadAttention(nn.Module):
 
         return x, w
 
+
 # @title Encoder
 class Encoder(nn.Module):
     def __init__(self, src_vocab_size, max_seq_length, num_layers, d_model, n_head, dropout):
@@ -106,6 +152,7 @@ class Encoder(nn.Module):
             x, w = layer(x, padding_mask)
 
         return x
+
 
 #@title EncoderLayer
 class EncoderLayer(nn.Module):
@@ -139,6 +186,7 @@ class EncoderLayer(nn.Module):
         x = x + _x
 
         return x, w
+
 
 # @title Decoder
 class Decoder(nn.Module):
@@ -234,5 +282,4 @@ class Transformer(nn.Module):
         output = self.decoder(input_tensor, memory, tgt_casual_mask, tgt_padding_mask, src_padding_mask)
 
         return output
-
-
+        
