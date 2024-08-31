@@ -8,6 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
+
+""" GPTモデル """
+
 #@title PositionalEncoding
 class PositionalEncoding(nn.Module):
     def __init__(self, context_size, d_model):
@@ -91,7 +94,7 @@ class MultiHeadAttention(nn.Module):
         self.fc = nn.Linear(d_model, d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, q, k, v,  casual_mask=None, padding_mask=None):
+    def forward(self, q, k, v, past=None, casual_mask=None, padding_mask=None):
         N = q.size(0) # バッチサイズ
         qS = q.size(1) # ウィンドウサイズ
         kS = k.size(1)
@@ -114,6 +117,12 @@ class MultiHeadAttention(nn.Module):
         k = k.transpose(1, 2)
         v = v.transpose(1, 2)
 
+        # past処理
+        if past is not None:
+            pk, pv = past
+            k = torch.cat([pk, k], dim=-2)
+            v = torch.cat([pv, v], dim=-2)
+
         # Scaled dot-product attention
         x, w = self.attention(q, k, v, casual_mask, padding_mask)
 
@@ -132,37 +141,19 @@ class MultiHeadAttention(nn.Module):
         # 正則化
         x = self.dropout(x)
 
-        return x, w
+        present = torch.stack([k, v])
+
+        return x, present, w
 
 
-# @title Encoder
-class Encoder(nn.Module):
-    def __init__(self, src_vocab_size, max_seq_length, num_layers, d_model, n_head, dropout):
-        super(Encoder, self).__init__()
-        self.d_model = d_model
-        self.encoder_embedding = nn.Embedding(src_vocab_size, d_model)
-        self.positional_encoding = PositionalEncoding(max_seq_length, d_model)
-        self.layers = nn.ModuleList([EncoderLayer( d_model, n_head, dropout) for _ in range(num_layers)])
-
-    def forward(self, x, casual_mask=None, padding_mask=None):
-        x = self.encoder_embedding(x) + self.positional_encoding(x)
-        x = x * math.sqrt(self.d_model)
-
-        for layer in self.layers:
-            x, w = layer(x, casual_mask=None, padding_mask=padding_mask)
-
-        return x
-
-
-#@title EncoderLayer
-class EncoderLayer(nn.Module):
-    # GPT-2
+#@title TransformerBlock
+class TransformerBlock(nn.Module):
     def __init__(self, d_model, n_head, dropout=0.1):
-        super(EncoderLayer, self).__init__()
+        super(TransformerBlock, self).__init__()
 
         self.norm_1 = nn.LayerNorm(d_model)
         self.norm_2 = nn.LayerNorm(d_model)
-        self.self_attn = MultiHeadAttention(n_head, d_model, dropout)
+        self.attn = MultiHeadAttention(n_head, d_model, dropout)
         self.ff = FeedForward(d_model, dropout)
         self.dropout = nn.Dropout(dropout)
 
@@ -171,10 +162,10 @@ class EncoderLayer(nn.Module):
         nn.init.normal_(self.norm_2.weight, mean=0, std=0.02)
 
     # GPT-2
-    def forward(self, x, casual_mask=None, padding_mask=None):
+    def forward(self, x, past=None, casual_mask=None, padding_mask=None):
         _x = x
         x = self.norm_1(x)
-        x, w = self.self_attn(x, x, x, casual_mask=None, padding_mask=padding_mask)
+        x, present, w = self.attn(x, x, x, past=past, casual_mask=casual_mask, padding_mask=padding_mask)
         x = x + _x
 
         # Residual x
@@ -185,101 +176,55 @@ class EncoderLayer(nn.Module):
         x = self.ff(x)
         x = x + _x
 
-        return x, w
+        return x, present, w
 
 
-# @title Decoder
-class Decoder(nn.Module):
-    def __init__(self, vocab_size, context_size, n_block, d_model, n_head, dropout=0.1):
-        super(Decoder, self).__init__()
-
+#@title GPT2
+class GPT2(GPT):
+    def __init__(self, vocab_size, context_size, d_model, n_head, n_block, dropout=0.1):
+        super(GPT, self).__init__()
+        
         self.vocab_size = vocab_size
         self.context_size = context_size
         self.d_model = d_model
         self.n_head = n_head
         self.n_block = n_block
-
+        
         self.token_embedding = nn.Embedding(vocab_size, d_model)
+        # self.position_embedding = PositionEmbedding(context_size, d_model)
         self.positional_encoding = PositionalEncoding(context_size, d_model)
         self.dropout = nn.Dropout(dropout)
-        self.layers = nn.ModuleList([DecoderLayer(d_model, n_head, dropout) for _ in range(self.n_block)])
+        self.transformer_block = nn.ModuleList([TransformerBlock(d_model, n_head, dropout) for _ in range(self.n_block)])
         self.norm = nn.LayerNorm(d_model)
-        self.fc = nn.Linear(d_model, vocab_size)
+        self.fc = nn.Linear(d_model * context_size, vocab_size)
+        
+        init.xavier_uniform_(self.fc.weight)        
+        init.normal_(self.token_embedding.weight, mean=0.0, std=0.02)
+        # init.normal_(self.position_embedding.embedding.weight, mean=0.0, std=0.02)
 
-    def forward(self, tgt, memory, casual_mask=None, tgt_padding_mask=None, memory_padding_mask=None):
-        x = self.token_embedding(tgt) + self.positional_encoding(tgt)
-        x = x * math.sqrt(self.d_model)
+
+    def forward(self, x, past=None, mask=None):
+        # 埋め込み
+        x = self.token_embedding(x) + self.positional_encoding(x)
         x = self.dropout(x)
 
-        for layer in self.layers:
-            x, _ = layer(x, memory, casual_mask=casual_mask, tgt_padding_mask=tgt_padding_mask, memory_padding_mask=memory_padding_mask)
+        # Transformer ブロック
+        presents = []
+        if past is not None:
+            past = torch.unbind(past, dim=1)
+        else:
+            past = [None] * self.n_block
 
+        for block, past_block in zip(self.transformer_block, past):
+            x, present, w = block(x, past=past_block, mask=mask)
+            presents.append(present)
+
+        # 正規化(GPT-2仕様)
         x = self.norm(x)
+
+        x = x.view(-1, self.context_size * self.d_model)
+
+        # 線形変換
         logits = self.fc(x)
-        return logits
 
-
-#@title DecoderLayer
-class DecoderLayer(nn.Module):
-    def __init__(self, d_model, n_head, dropout=0.1):
-        super(DecoderLayer, self).__init__()
-
-        self.norm_1 = nn.LayerNorm(d_model)
-        self.norm_2 = nn.LayerNorm(d_model)
-        self.norm_3 = nn.LayerNorm(d_model)
-        self.self_attn = MultiHeadAttention(n_head, d_model, dropout)
-        self.cross_attn = MultiHeadAttention(n_head, d_model, dropout)
-        self.ff = FeedForward(d_model, dropout)
-        self.dropout = nn.Dropout(dropout)
-
-        # Initialize gamma (weight) with N(0, 0.02)
-        nn.init.normal_(self.norm_1.weight, mean=0, std=0.02)
-        nn.init.normal_(self.norm_2.weight, mean=0, std=0.02)
-        nn.init.normal_(self.norm_3.weight, mean=0, std=0.02)
-
-    # GPT-2
-    def forward(self, x, memory, casual_mask=None, tgt_padding_mask=None, memory_padding_mask=None):
-        # Residual x
-        _x = x
-        x = self.norm_1(x)
-        x, _ = self.self_attn(x, x, x, casual_mask=casual_mask, padding_mask=tgt_padding_mask)
-        x = x + _x
-
-        # Residual x
-        _x = x
-
-        x = self.norm_2(x)
-        x, _ = self.cross_attn(x, memory, memory, casual_mask=None, padding_mask=memory_padding_mask)
-        x = x + _x
-
-        # Residual x
-        _x = x
-
-        # Feed Forward
-        x = self.norm_3(x)
-        x = self.ff(x)
-        x = x + _x
-
-        return x, None
-
-
-# @title Transformer
-class Transformer(nn.Module):
-    def __init__(self, src_vocab_size, tgt_vocab_size, d_model, n_head, num_encoder_layers, num_decoder_layers, max_seq_length, dropout=0.1):
-        super(Transformer, self).__init__()
-        self.encoder = Encoder(src_vocab_size, max_seq_length, num_encoder_layers, d_model, n_head, dropout=dropout)
-        self.decoder = Decoder(tgt_vocab_size, max_seq_length, num_decoder_layers, d_model, n_head, dropout=dropout)
-        self.d_model = d_model
-        self.tgt_vocab_size = tgt_vocab_size
-        self.max_seq_length = max_seq_length
-
-    def forward(self, src, tgt, tgt_casual_mask=None, tgt_padding_mask=None, src_padding_mask=None):
-        memory = self.encoder(src, casual_mask=None, padding_mask=src_padding_mask)
-
-        input_tensor = make_input_tensor(src.size(0), src.size(1)) # [2,15]
-        input_tensor = input_tensor.to(src.device)
-        # 一度に一文を推論
-        output = self.decoder(input_tensor, memory, casual_mask=tgt_casual_mask, tgt_padding_mask=tgt_padding_mask, memory_padding_mask=src_padding_mask)
-
-        return output
-        
+        return logits, torch.stack(presents, dim=1), w

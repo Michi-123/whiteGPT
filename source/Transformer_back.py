@@ -144,12 +144,12 @@ class Encoder(nn.Module):
         self.positional_encoding = PositionalEncoding(max_seq_length, d_model)
         self.layers = nn.ModuleList([EncoderLayer( d_model, n_head, dropout) for _ in range(num_layers)])
 
-    def forward(self, x, casual_mask=None, padding_mask=None):
+    def forward(self, x, padding_mask=None):
         x = self.encoder_embedding(x) + self.positional_encoding(x)
         x = x * math.sqrt(self.d_model)
 
         for layer in self.layers:
-            x, w = layer(x, casual_mask=None, padding_mask=padding_mask)
+            x, w = layer(x, padding_mask)
 
         return x
 
@@ -171,10 +171,10 @@ class EncoderLayer(nn.Module):
         nn.init.normal_(self.norm_2.weight, mean=0, std=0.02)
 
     # GPT-2
-    def forward(self, x, casual_mask=None, padding_mask=None):
+    def forward(self, x, padding_mask=None):
         _x = x
         x = self.norm_1(x)
-        x, w = self.self_attn(x, x, x, casual_mask=None, padding_mask=padding_mask)
+        x, w = self.self_attn(x, x, x, padding_mask=padding_mask)
         x = x + _x
 
         # Residual x
@@ -206,13 +206,13 @@ class Decoder(nn.Module):
         self.norm = nn.LayerNorm(d_model)
         self.fc = nn.Linear(d_model, vocab_size)
 
-    def forward(self, tgt, memory, casual_mask=None, tgt_padding_mask=None, memory_padding_mask=None):
+    def forward(self, tgt, memory, tgt_mask=None, tgt_padding_mask=None, memory_padding_mask=None):
         x = self.token_embedding(tgt) + self.positional_encoding(tgt)
         x = x * math.sqrt(self.d_model)
         x = self.dropout(x)
 
         for layer in self.layers:
-            x, _ = layer(x, memory, casual_mask=casual_mask, tgt_padding_mask=tgt_padding_mask, memory_padding_mask=memory_padding_mask)
+            x, _ = layer(x, memory, tgt_mask, tgt_padding_mask, memory_padding_mask)
 
         x = self.norm(x)
         logits = self.fc(x)
@@ -242,7 +242,7 @@ class DecoderLayer(nn.Module):
         # Residual x
         _x = x
         x = self.norm_1(x)
-        x, _ = self.self_attn(x, x, x, casual_mask=casual_mask, padding_mask=tgt_padding_mask)
+        x, _ = self.self_attn(x, x, x, casual_mask, padding_mask=tgt_padding_mask)
         x = x + _x
 
         # Residual x
@@ -274,12 +274,12 @@ class Transformer(nn.Module):
         self.max_seq_length = max_seq_length
 
     def forward(self, src, tgt, tgt_casual_mask=None, tgt_padding_mask=None, src_padding_mask=None):
-        memory = self.encoder(src, casual_mask=None, padding_mask=src_padding_mask)
+        memory = self.encoder(src, src_padding_mask)
 
         input_tensor = make_input_tensor(src.size(0), src.size(1)) # [2,15]
         input_tensor = input_tensor.to(src.device)
         # 一度に一文を推論
-        output = self.decoder(input_tensor, memory, casual_mask=tgt_casual_mask, tgt_padding_mask=tgt_padding_mask, memory_padding_mask=src_padding_mask)
+        output = self.decoder(input_tensor, memory, tgt_casual_mask, tgt_padding_mask, src_padding_mask)
 
         return output
         
