@@ -181,6 +181,57 @@ class Evaluate:
             if next_word == eos:
                 break
 
+
+    def generate_fine_tuned_with_padding_mask(self, sentence, model, casual_mask=None, padding_mask=None, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
+        model.eval()
+        model.cpu()
+        pad = self.dataset.word2index['<PAD>']
+
+        parsed_sentence = self.tagger.parse(sentence)
+        source = self.dataset.sequence2indices(parsed_sentence)
+        source = source[:self.context_size]
+
+        for i in range(max_token_size):
+            if len(source) <= self.context_size:
+                inputs = source + [pad] * self.context_size
+                inputs = inputs[:self.context_size]
+            else:
+                source = source[1:]
+                inputs = source
+            # print(self.dataset.indices2sequence(inputs))
+            inputs = torch.LongTensor([inputs]).cpu()
+
+            outputs ,_, _ = model(inputs, past=None, casual_mask=casual_mask, padding_mask=padding_mask)
+            if top_k == 0:
+                index = torch.argmax(outputs).item()
+            elif top_k > 0:
+
+                topk_values, topk_indices = torch.topk(outputs, top_k)
+
+                # topk_values をSoftmax で確率分布に変換
+                topk_values = torch.softmax(topk_values, dim=-1)
+                
+                # top-p で切り捨て:Handle the case where no values are greater than top_p
+                valid_indices = topk_values > top_p
+                if valid_indices.any():
+                    topk_indices = topk_indices[valid_indices]
+
+                    # k個の最大値からランダムに1つをサンプリング
+                    topk_index = torch.randint(0, topk_indices.size(0), (1,)) # Change size(1) to size(0) to get the first dimension
+                    index = topk_indices[topk_index.item()].tolist()
+                else:
+                    # If no values are greater than top_p, take the most probable index (index 0)
+                    index = topk_indices[0, 0].item()  # Access the first element of the first dimension
+                
+            source.append(index)
+            
+            next_word = self.dataset.index2word[index]
+
+            print(next_word, end="")
+
+            if next_word == eos:
+                break
+
     def input_tokens(self, corpus):
         pad = self.dataset.word2index["<PAD>"]
         source = self.dataset.sequence2indices(corpus)
