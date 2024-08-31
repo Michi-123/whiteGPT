@@ -182,7 +182,7 @@ class TransformerBlock(nn.Module):
 #@title GPT2
 class GPT2(nn.Module):
     def __init__(self, vocab_size, context_size, d_model, n_head, n_block, dropout=0.1):
-        super(GPT, self).__init__()
+        super(GPT2, self).__init__()
         
         self.vocab_size = vocab_size
         self.context_size = context_size
