@@ -18,8 +18,11 @@ def set_css(*args, **kwargs):
   '''))
 get_ipython().events.register('pre_run_cell', set_css)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def create_padding_mask(sequence):
+    mask = (sequence == 0)
+    return mask
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Evaluate:
 
@@ -182,7 +185,7 @@ class Evaluate:
                 break
 
 
-    def generate_fine_tuned_with_padding_mask(self, sentence, model, casual_mask=None, padding_mask=None, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
+    def generate_fine_tuned_with_padding_mask(self, sentence, model, casual_mask=None, max_token_size=500, top_k=0, top_p=0, eos='<EOS>'):
         model.eval()
         model.cpu()
         pad = self.dataset.word2index['<PAD>']
@@ -200,6 +203,8 @@ class Evaluate:
                 inputs = source
             # print(self.dataset.indices2sequence(inputs))
             inputs = torch.LongTensor([inputs]).cpu()
+            
+            padding_mask = create_padding_mask(inputs)
 
             outputs ,_, _ = model(inputs, past=None, casual_mask=casual_mask, padding_mask=padding_mask)
             if top_k == 0:
@@ -231,6 +236,7 @@ class Evaluate:
 
             if next_word == eos:
                 break
+
 
     def input_tokens(self, corpus):
         pad = self.dataset.word2index["<PAD>"]
