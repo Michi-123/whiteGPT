@@ -203,7 +203,7 @@ class GPT2(nn.Module):
         # init.normal_(self.position_embedding.embedding.weight, mean=0.0, std=0.02)
 
 
-    def forward(self, x, past=None, casual_mask=casual_mask, padding_mask=padding_mask):
+    def forward(self, x, past=None, casual_mask=None, padding_mask=None):
         # 埋め込み
         x = self.token_embedding(x) + self.positional_encoding(x)
         x = self.dropout(x)
