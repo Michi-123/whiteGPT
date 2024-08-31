@@ -19,17 +19,7 @@ def create_casual_mask(seq_length):
 def create_padding_mask(sequence):
     mask = (sequence == 0)
     return mask
-    
-    
-def _generate_square_subsequent_mask(sz):
-    mask = (torch.triu(torch.ones(sz, sz)) == 1)
-    mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-    return mask
 
-#@title create_padding_mask
-def create_padding_mask(sequence):
-    mask = (sequence == 0)
-    return mask
 
 def _pad_collate(batch):
     src_list, tgt_list = [], []
@@ -41,7 +31,6 @@ def _pad_collate(batch):
     tgt_pad = nn.utils.rnn.pad_sequence(tgt_list, padding_value=0, batch_first=True)
 
     return src_pad, tgt_pad
-
 
 
 #@title make_input_tensor
@@ -57,10 +46,7 @@ def make_input_tensor(batch_size, max_seq_length):
     input_tensor = torch.cat([sos_tensor.unsqueeze(1), pad_tensor], dim=1)
 
     return input_tensor
-    
-    
-    
-    
+
     
 import re
 import torch
