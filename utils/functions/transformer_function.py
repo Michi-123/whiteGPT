@@ -120,7 +120,7 @@ def test_from_dataset(model, dataset):
                 if (i+1) % 3 == 0:
                     input('next')
         except:
-            print('Error.')
+            print('Break.')
 
 
 #@title test_from_human_input
