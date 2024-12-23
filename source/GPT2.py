@@ -49,9 +49,11 @@ class MultiHeadAttention(nn.Module):
 
         # past処理
         if past is not None:
-            pk, pv = past
-            k = torch.cat([pk, k], dim=-2)
-            v = torch.cat([pv, v], dim=-2)
+            pk, pv = past[0], past[1]  # 過去のキーと値
+            
+            # 過去と現在を平均化
+            k = (pk + k) / 2  # [N, H, S, D]
+            v = (pv + v) / 2  # [N, H, S, D]
 
         # Scaled dot-product attention
         x, attn_weights = self.attention(q, k, v, mask=mask)
