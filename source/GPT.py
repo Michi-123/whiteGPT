@@ -128,6 +128,12 @@ class MultiHeadAttention(nn.Module):
         self.fc = nn.Linear(d_model, d_model)
         self.dropout = nn.Dropout(dropout)
 
+        # 全結合層をザビエル方式で初期化
+        nn.init.xavier_uniform_(self.fc_q.weight)
+        nn.init.xavier_uniform_(self.fc_k.weight)
+        nn.init.xavier_uniform_(self.fc_v.weight)
+        nn.init.xavier_uniform_(self.fc.weight)
+
     def forward(self, q, k, v, mask=None):
         N = q.size(0) # バッチサイズ
         S = q.size(1) # ウィンドウサイズ
@@ -178,6 +184,10 @@ class FeedForward(nn.Module):
         self.fc1 = nn.Linear(d_model, d_model * 4 )
         self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(d_model * 4, d_model)
+        
+        # 全結合層をザビエル方式で初期化
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
 
     def forward(self, x):
         h = self.fc1(x)
