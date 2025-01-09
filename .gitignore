@@ -1,3 +1,4 @@
 corpus/pre-train/jp_copyright/
 corpus/pre-train/eng_copyright/
 model/transformer/en2ja_model.pkl
+model/educational_materials/*.pkl
