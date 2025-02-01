@@ -124,3 +124,9 @@ class Vocab:
         self.index2word = {idx: word for idx, word in enumerate(vocab)}
         self.word2index = {word: idx for idx, word in enumerate(vocab)}
         self.vocab_size = len(self.word2index)
+        
+    def decoder(self, indices, delimiter=' '):
+        sentence = [self.index2word[index.item()] for index in indices]
+        sentence = delimiter.join(sentence)
+        return sentence
+        
