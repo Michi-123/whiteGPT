@@ -35,6 +35,11 @@ class Vocab:
         self.word_freq = {}
         self.word_freq_desc = {}
 
+        # Add 
+        self.word2index["<"] = 0
+        self.word2index[">"] = 0
+        self.word2index["pad"] = 0
+
         # 頻出度を更新
         #self._update_word_freq(corpus)
         self._create_word_freq(corpus)
