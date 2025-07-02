@@ -25,8 +25,8 @@ class PositionalEncoding(nn.Module):
 
         for pos in range(context_size):
             for i in range(0, d_model, 2):
-                pe[pos,i]   = math.sin(pos/(10000**((2*i)/d_model)))
-                pe[pos,i+1] = math.cos(pos/(10000**((2*i)/d_model)))
+                pe[pos,i]   = math.sin(pos/(10000**(i/d_model)))
+                pe[pos,i+1] = math.cos(pos/(10000**(i/d_model)))
 
         # 学習パラメーターの更新対象から外してクラス変数に確保(重要)
         self.register_buffer('pe', pe.unsqueeze(0))
